@@ -610,6 +610,7 @@
   body.no-inventory-edit .inv-edit-only { display: none !important; }
   body.no-sales-log .sales-log-only { display: none !important; }
   body.no-finance-view .finance-col { display: none !important; }
+  body.no-team-admin .team-admin-only { display: none !important; }
   .perm-badge { display:inline-block; font-size:9px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; padding:3px 9px; border-radius:20px; background:rgba(177,93,112,.12); color:var(--berry); }
   .low-stock-badge { display:inline-block; font-size:9px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; padding:3px 9px; border-radius:20px; background:rgba(192,57,43,.12); color:#c0392b; }
   .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(177,93,112,.08); font-size:12px; }
@@ -1640,24 +1641,25 @@
   </div>
 
   <div class="nav-sections">
-    <div class="nav-section">
-      <div class="nav-label">Overview</div>
-      <button class="nav-btn active" data-tab="dashboard">Dashboard</button>
-    </div>
     <div class="nav-section" id="navSectionFinance">
       <div class="nav-label">Finance</div>
+      <button class="nav-btn active" data-tab="dashboard">Dashboard</button>
       <button class="nav-btn" data-tab="income">Income</button>
       <button class="nav-btn" data-tab="expenses">Expenses</button>
       <button class="nav-btn" data-tab="savings">Savings</button>
       <button class="nav-btn" data-tab="recurring">Recurring Tracker</button>
     </div>
     <div class="nav-section" id="navSectionSales" style="display:none;">
-      <div class="nav-label">Sales</div>
-      <button class="nav-btn" data-tab="sales">Sales &amp; Inventory</button>
+      <div class="nav-label">Sales &amp; Inventory</div>
+      <button class="nav-btn" data-tab="salesdash">Dashboard</button>
+      <button class="nav-btn" data-tab="categories">Categories</button>
+      <button class="nav-btn" data-tab="inventory">Inventory</button>
+      <button class="nav-btn" data-tab="orders">Orders</button>
     </div>
     <div class="nav-section" id="navSectionHR">
       <div class="nav-label">HR</div>
-      <button class="nav-btn" data-tab="hr">Team &amp; HR</button>
+      <button class="nav-btn" data-tab="hrdash">Dashboard</button>
+      <button class="nav-btn" data-tab="hr">My Profile &amp; Hours</button>
     </div>
   </div>
 
@@ -1702,8 +1704,8 @@
       <div style="font-size:16px;font-weight:800;color:var(--espresso);margin-bottom:8px;">Financial history is restricted</div>
       <div style="font-size:13px;color:var(--dusty);max-width:420px;margin:0 auto 18px;line-height:1.6;">Your account doesn't have access to the company's finance overview. Head to Sales &amp; Inventory to log a sale, or Team &amp; HR to view your own hours and profile.</div>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-        <button class="btn-primary" style="padding:10px 20px;font-size:12px;" onclick="switchTab('sales')">Go to Sales &amp; Inventory</button>
-        <button class="btn-secondary" style="padding:10px 20px;font-size:12px;" onclick="switchTab('hr')">Go to Team &amp; HR</button>
+        <button class="btn-primary" style="padding:10px 20px;font-size:12px;" onclick="switchTab('salesdash')">Go to Sales &amp; Inventory</button>
+        <button class="btn-secondary" style="padding:10px 20px;font-size:12px;" onclick="switchTab('hrdash')">Go to Team &amp; HR</button>
       </div>
     </div>
     <div id="dashboardFullContent">
@@ -2049,89 +2051,161 @@
   </div>
 
   <!--  SALES & INVENTORY  -->
-  <div class="tab-content" id="tab-sales">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px;">
+  <!--  SALES & INVENTORY DASHBOARD  -->
+  <div class="tab-content" id="tab-salesdash">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;">
       <div class="rec-summary-pill">
-        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dusty);margin-bottom:8px;">My Sales This Month</div>
-        <div style="font-size:26px;font-weight:900;color:var(--berry);" id="mySalesMonthTotal">$0.00</div>
-        <div style="font-size:11px;color:var(--dusty);margin-top:4px;" id="mySalesMonthCount">0 sales</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dusty);margin-bottom:8px;">Sales This Month</div>
+        <div style="font-size:24px;font-weight:900;color:var(--berry);" id="sdSalesMonthTotal">$0.00</div>
+        <div style="font-size:11px;color:var(--dusty);margin-top:4px;" id="sdSalesMonthCount">0 orders</div>
       </div>
       <div class="rec-summary-pill">
-        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dusty);margin-bottom:8px;">My Commission This Month</div>
-        <div style="font-size:26px;font-weight:900;color:#3d7a48;" id="myCommissionMonthTotal">$0.00</div>
-        <div style="font-size:11px;color:var(--dusty);margin-top:4px;">at <span id="myCommissionRate">0</span>% per sale</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dusty);margin-bottom:8px;">My Commission (Month)</div>
+        <div style="font-size:24px;font-weight:900;color:#3d7a48;" id="sdMyCommission">$0.00</div>
+        <div style="font-size:11px;color:var(--dusty);margin-top:4px;">at <span id="sdMyCommissionRate">0</span>% per sale</div>
       </div>
       <div class="rec-summary-pill">
-        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dusty);margin-bottom:8px;">Low Stock Items</div>
-        <div style="font-size:26px;font-weight:900;color:#c0392b;" id="lowStockCount">0</div>
-        <div style="font-size:11px;color:var(--dusty);margin-top:4px;">need restocking</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dusty);margin-bottom:8px;">Stock Value On Hand</div>
+        <div style="font-size:24px;font-weight:900;color:var(--espresso);" id="sdStockValue">$0.00</div>
+        <div style="font-size:11px;color:var(--dusty);margin-top:4px;" id="sdVariantCount">0 products</div>
+      </div>
+      <div class="rec-summary-pill">
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dusty);margin-bottom:8px;">Needs Attention</div>
+        <div style="font-size:24px;font-weight:900;color:#c0392b;" id="sdLowStockCount">0</div>
+        <div style="font-size:11px;color:var(--dusty);margin-top:4px;">low or out of stock</div>
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 340px;gap:22px;">
-      <div style="display:flex;flex-direction:column;gap:22px;">
-
-        <!-- Inventory -->
-        <div>
-          <div class="section-header">
-            <div class="section-dot"></div>
-            <div class="section-title">Inventory</div>
-            <button class="btn-primary inv-edit-only" style="margin-left:auto;padding:8px 16px;font-size:12px;" onclick="openInvModal()">+ Add Item</button>
-          </div>
-          <div class="card">
-            <div id="inventoryList" style="display:flex;flex-direction:column;gap:10px;"></div>
-            <div id="noInventory" class="card" style="display:none;text-align:center;color:var(--dusty);font-size:13px;padding:24px;">No inventory items yet. Add your first product.</div>
-          </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div class="card-title" style="margin:0;">Needs Restocking</div>
+          <button class="btn-secondary" style="font-size:11px;padding:6px 12px;" onclick="switchTab('inventory')">View Inventory</button>
         </div>
+        <div id="sdLowStockList" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div class="card-title" style="margin:0;">Recent Orders</div>
+          <button class="btn-secondary" style="font-size:11px;padding:6px 12px;" onclick="switchTab('orders')">New Order</button>
+        </div>
+        <div id="sdRecentOrders" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
+  </div>
 
-        <!-- Sales log -->
-        <div>
-          <div class="section-header">
-            <div class="section-dot" style="background:var(--dusty)"></div>
-            <div class="section-title">Sales Log</div>
-          </div>
-          <div class="card">
-            <table style="width:100%;border-collapse:collapse;font-size:12px;">
-              <thead>
-                <tr style="text-align:left;color:var(--dusty);font-size:10px;text-transform:uppercase;letter-spacing:.5px;">
-                  <th style="padding:6px 8px;">Date</th>
-                  <th style="padding:6px 8px;">Item</th>
-                  <th style="padding:6px 8px;">Qty</th>
-                  <th style="padding:6px 8px;">Revenue</th>
-                  <th style="padding:6px 8px;" class="finance-col">Profit</th>
-                  <th style="padding:6px 8px;">Commission</th>
-                </tr>
-              </thead>
-              <tbody id="salesLogBody"></tbody>
-            </table>
-            <div id="noSales" style="display:none;text-align:center;color:var(--dusty);font-size:13px;padding:24px;">No sales logged yet.</div>
-          </div>
+  <!--  INVENTORY  -->
+  <div class="tab-content" id="tab-inventory">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+      <div style="font-size:12px;color:var(--dusty);">Products are grouped by category. Add categories first on the <a href="#" onclick="switchTab('categories');return false;" style="color:var(--berry);font-weight:700;">Categories</a> tab, then add variations (size, colour, source) under each one here.</div>
+      <button class="btn-primary inv-edit-only" style="padding:8px 16px;font-size:12px;" onclick="openVariantModal()">+ Add Product Variant</button>
+    </div>
+    <div id="inventoryByCategory" style="display:flex;flex-direction:column;gap:22px;"></div>
+    <div id="noInventoryCategories" class="card" style="display:none;text-align:center;color:var(--dusty);font-size:13px;padding:30px;">No categories yet. Head to the Categories tab to add your first one (e.g. "Notebooks", "Stickers").</div>
+  </div>
+
+  <!--  CATEGORIES  -->
+  <div class="tab-content" id="tab-categories">
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:22px;">
+      <div>
+        <div class="section-header">
+          <div class="section-dot"></div>
+          <div class="section-title">Product Categories</div>
+          <button class="btn-primary inv-edit-only" style="margin-left:auto;padding:8px 16px;font-size:12px;" onclick="addCategory()">+ Add Category</button>
+        </div>
+        <div class="card">
+          <div id="categoryList" style="display:flex;flex-direction:column;gap:10px;"></div>
+          <div id="noCategories" style="display:none;text-align:center;color:var(--dusty);font-size:13px;padding:24px;">No categories yet.</div>
+          <div id="categoryLimitNote" style="font-size:10px;color:var(--dusty);margin-top:10px;"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:10px;">Why categories?</div>
+        <p style="font-size:11px;color:var(--dusty);line-height:1.7;">
+          Group what you sell into up to 10 categories (e.g. Notebooks, Stickers, Planners). Inside each category you'll add the actual variations you stock, like colour, size, or supplier, on the Inventory tab.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!--  ORDERS  -->
+  <div class="tab-content" id="tab-orders">
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:22px;">
+      <div>
+        <div class="section-header">
+          <div class="section-dot"></div>
+          <div class="section-title">Order History</div>
+        </div>
+        <div class="card">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead>
+              <tr style="text-align:left;color:var(--dusty);font-size:10px;text-transform:uppercase;letter-spacing:.5px;">
+                <th style="padding:6px 8px;">Date</th>
+                <th style="padding:6px 8px;">Customer</th>
+                <th style="padding:6px 8px;">Items</th>
+                <th style="padding:6px 8px;">Total</th>
+                <th style="padding:6px 8px;" class="finance-col">Profit</th>
+                <th style="padding:6px 8px;">Commission</th>
+              </tr>
+            </thead>
+            <tbody id="ordersLogBody"></tbody>
+          </table>
+          <div id="noOrders" style="display:none;text-align:center;color:var(--dusty);font-size:13px;padding:24px;">No orders logged yet.</div>
         </div>
       </div>
 
-      <!-- Log a Sale panel -->
-      <div style="display:flex;flex-direction:column;gap:18px;">
-        <div class="card sales-log-only">
-          <div class="card-title" style="margin-bottom:14px;">Log a Sale</div>
-          <label class="form-label">Item</label>
-          <select id="saleItemSelect" class="form-input" style="margin-bottom:10px;" onchange="_updateSalePreview()"></select>
-          <label class="form-label">Quantity Sold</label>
-          <input type="number" id="saleQty" class="form-input" value="1" min="1" style="margin-bottom:10px;" oninput="_updateSalePreview()" />
-          <label class="form-label">Sale Price (per unit)</label>
-          <input type="number" id="saleUnitPrice" class="form-input" style="margin-bottom:14px;" oninput="_updateSalePreview()" />
-          <div style="padding:12px 14px;background:rgba(228,210,215,.4);border-radius:12px;font-size:12px;display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
-            <div style="display:flex;justify-content:space-between;"><span style="color:var(--dusty);">Total Revenue</span><strong id="salePreviewRevenue">$0.00</strong></div>
-            <div style="display:flex;justify-content:space-between;"><span style="color:var(--dusty);">Your Commission (<span id="salePreviewPct">0</span>%)</span><strong id="salePreviewCommission" style="color:#3d7a48;">$0.00</strong></div>
-            <div style="display:flex;justify-content:space-between;"><span style="color:var(--dusty);">Stock Remaining After</span><strong id="salePreviewStock">0</strong></div>
-          </div>
-          <button class="btn-primary" style="width:100%;padding:12px;" onclick="logSale()">Log This Sale</button>
-        </div>
-
+      <div class="sales-log-only" style="display:flex;flex-direction:column;gap:18px;">
         <div class="card">
-          <div class="card-title" style="margin-bottom:12px;">How it works</div>
-          <p style="font-size:11px;color:var(--dusty);line-height:1.7;">
-            Logging a sale reduces stock automatically, records your commission, and (when enabled) adds the revenue straight into the company's Income ledger. Low-stock items are flagged once they fall to or below their threshold.
-          </p>
+          <div class="card-title" style="margin-bottom:14px;">New Order</div>
+          <label class="form-label">Customer</label>
+          <input list="customerNamesList" id="orderCustomerName" class="form-input" placeholder="Customer name" style="margin-bottom:6px;" />
+          <datalist id="customerNamesList"></datalist>
+          <input type="text" id="orderCustomerPhone" class="form-input" placeholder="Phone (optional)" style="margin-bottom:14px;" />
+
+          <div id="orderLineItems" style="display:flex;flex-direction:column;gap:10px;margin-bottom:10px;"></div>
+          <button class="btn-secondary" style="width:100%;padding:9px;font-size:12px;margin-bottom:14px;" onclick="addOrderLine()">+ Add Product</button>
+
+          <div style="padding:12px 14px;background:rgba(228,210,215,.4);border-radius:12px;font-size:12px;display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;"><span style="color:var(--dusty);">Order Total</span><strong id="orderPreviewTotal">$0.00</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:var(--dusty);">Your Commission (<span id="orderPreviewPct">0</span>%)</span><strong id="orderPreviewCommission" style="color:#3d7a48;">$0.00</strong></div>
+          </div>
+          <button class="btn-primary" style="width:100%;padding:12px;" onclick="submitOrder()">Complete Order</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--  HR DASHBOARD  -->
+  <div class="tab-content" id="tab-hrdash">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px;">
+      <div class="rec-summary-pill">
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dusty);margin-bottom:8px;">Team Size</div>
+        <div style="font-size:26px;font-weight:900;color:var(--berry);" id="hdHeadcount">0</div>
+        <div style="font-size:11px;color:var(--dusty);margin-top:4px;">active team members</div>
+      </div>
+      <div class="rec-summary-pill">
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dusty);margin-bottom:8px;">Hours This Month</div>
+        <div style="font-size:26px;font-weight:900;color:var(--espresso);" id="hdHoursMonth">0h</div>
+        <div style="font-size:11px;color:var(--dusty);margin-top:4px;">logged across the team</div>
+      </div>
+      <div class="rec-summary-pill">
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dusty);margin-bottom:8px;">Pending Sign-ups</div>
+        <div style="font-size:26px;font-weight:900;color:#c0392b;" id="hdPendingCount">0</div>
+        <div style="font-size:11px;color:var(--dusty);margin-top:4px;">need a role assigned</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px;">Work Arrangement Mix</div>
+        <div id="hdArrangementMix" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div class="card-title" style="margin:0;">Quick Links</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button class="btn-secondary" style="padding:10px;font-size:12px;" onclick="switchTab('hr')">My Profile &amp; Hours</button>
+          <button class="btn-secondary team-admin-only" style="padding:10px;font-size:12px;" onclick="switchTab('settings')">Manage Team &amp; Permissions</button>
         </div>
       </div>
     </div>
@@ -2280,24 +2354,13 @@
             <option value="expenses">Expenses</option>
             <option value="savings">Savings</option>
             <option value="recurring">Recurring Tracker</option>
-            <option value="sales">Sales &amp; Inventory</option>
-            <option value="hr">Team &amp; HR</option>
+            <option value="salesdash">Sales &amp; Inventory Dashboard</option>
+            <option value="hrdash">HR Dashboard</option>
           </select>
           <div style="font-size:10px;color:var(--dusty);margin-top:6px;opacity:.8;">The tab that opens when you log in.</div>
         </div>
 
-        <!-- Income Treatment -->
-        <div class="card">
-          <div class="card-title" style="margin-bottom:10px;">Income Treatment</div>
-          <p style="font-size:11px;color:var(--dusty);line-height:1.6;margin-bottom:12px;">
-            <strong>Calendar mode:</strong> income and expenses are netted within each calendar month.<br>
-            <strong>Paycheck mode:</strong> income covers expenses from the day it arrives onward, and any surplus carries forward as available income into the next month — ideal if you're paid on the 20th, 25th, or any mid-month date.
-          </p>
-          <div style="display:flex;gap:8px;">
-            <button onclick="setIncomeMode('calendar')" id="im-calendar" class="btn-secondary" style="flex:1;padding:10px;font-size:12px;">Calendar</button>
-            <button onclick="setIncomeMode('paycheck')" id="im-paycheck" class="btn-secondary" style="flex:1;padding:10px;font-size:12px;">Paycheck</button>
-          </div>
-        </div>
+        <!-- Income Treatment: not applicable to continuous business revenue — kept fixed at calendar-month netting -->
 
         <!-- Total Budget -->
         <div class="card">
@@ -2839,52 +2902,92 @@
   </div>
 </div>
 
-<!-- ══════════ MODAL: Inventory Item ══════════ -->
-<div id="invModal" style="display:none;position:fixed;inset:0;background:rgba(79,46,45,.35);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;">
-  <div style="background:var(--cream);border-radius:24px;padding:28px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(79,46,45,.2);">
+<!-- ══════════ MODAL: Product Variant ══════════ -->
+<div id="variantModal" style="display:none;position:fixed;inset:0;background:rgba(79,46,45,.35);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:var(--cream);border-radius:24px;padding:28px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(79,46,45,.2);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-      <h2 id="invModalTitle" style="font-size:17px;font-weight:800;">+ Add Inventory Item</h2>
-      <button onclick="closeInvModal()" style="background:rgba(177,93,112,.1);border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;color:var(--berry);">x</button>
+      <h2 id="variantModalTitle" style="font-size:17px;font-weight:800;">+ Add Product Variant</h2>
+      <button onclick="closeVariantModal()" style="background:rgba(177,93,112,.1);border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;color:var(--berry);">x</button>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;">
       <div>
-        <label class="form-label">Item Name</label>
-        <input type="text" id="invName" class="form-input" placeholder="e.g. Undated Soft Life Planner (Printed)" />
+        <label class="form-label">Category</label>
+        <select id="variantCategory" class="form-input"></select>
+      </div>
+      <div>
+        <label class="form-label">Variant Name</label>
+        <input type="text" id="variantName" class="form-input" placeholder="e.g. Blue / A5" />
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div>
-          <label class="form-label">SKU (optional)</label>
-          <input type="text" id="invSku" class="form-input" />
+          <label class="form-label">Source / Supplier</label>
+          <input type="text" id="variantSource" class="form-input" placeholder="e.g. Local printer" />
         </div>
         <div>
-          <label class="form-label">Category</label>
-          <input type="text" id="invCategory" class="form-input" placeholder="e.g. Planners" />
+          <label class="form-label">SKU (optional)</label>
+          <input type="text" id="variantSku" class="form-input" />
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div>
           <label class="form-label">Cost Price</label>
-          <input type="number" id="invCostPrice" class="form-input" min="0" step="0.01" />
+          <input type="number" id="variantCostPrice" class="form-input" min="0" step="0.01" />
         </div>
         <div>
           <label class="form-label">Sale Price</label>
-          <input type="number" id="invSalePrice" class="form-input" min="0" step="0.01" />
+          <input type="number" id="variantSalePrice" class="form-input" min="0" step="0.01" />
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div>
-          <label class="form-label">Quantity In Stock</label>
-          <input type="number" id="invQty" class="form-input" min="0" step="1" />
+          <label class="form-label">Starting Quantity</label>
+          <input type="number" id="variantQty" class="form-input" min="0" step="1" />
         </div>
         <div>
           <label class="form-label">Low Stock Alert Below</label>
-          <input type="number" id="invLowStock" class="form-input" min="0" step="1" value="5" />
+          <input type="number" id="variantLowStock" class="form-input" min="0" step="1" value="5" />
         </div>
       </div>
     </div>
     <div style="display:flex;gap:10px;margin-top:20px;">
-      <button class="btn-secondary" onclick="closeInvModal()" style="flex:1;">Cancel</button>
-      <button class="btn-primary" onclick="saveInvItem()" style="flex:2;">Save Item</button>
+      <button class="btn-secondary" onclick="closeVariantModal()" style="flex:1;">Cancel</button>
+      <button class="btn-primary" onclick="saveVariant()" style="flex:2;">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: Restock ══════════ -->
+<div id="restockModal" style="display:none;position:fixed;inset:0;background:rgba(79,46,45,.35);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:var(--cream);border-radius:24px;padding:28px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(79,46,45,.2);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <h2 style="font-size:17px;font-weight:800;">Restock <span id="restockVariantName" style="color:var(--berry);"></span></h2>
+      <button onclick="closeRestockModal()" style="background:rgba(177,93,112,.1);border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;color:var(--berry);">x</button>
+    </div>
+    <div id="restockCurrentQty" style="font-size:11px;color:var(--dusty);margin-bottom:16px;"></div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <label class="form-label">Quantity</label>
+        <input type="number" id="restockQty" class="form-input" min="1" step="1" />
+      </div>
+      <div>
+        <label class="form-label">Status</label>
+        <select id="restockStatus" class="form-input">
+          <option value="delivered">Delivered at Store (add to sellable stock now)</option>
+          <option value="on_the_way">On The Way (not sellable yet)</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Source / Supplier</label>
+        <input type="text" id="restockSource" class="form-input" />
+      </div>
+      <div>
+        <label class="form-label">Note (optional)</label>
+        <input type="text" id="restockNote" class="form-input" placeholder="e.g. Order #, expected date" />
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn-secondary" onclick="closeRestockModal()" style="flex:1;">Cancel</button>
+      <button class="btn-primary" onclick="saveRestock()" style="flex:2;">Save</button>
     </div>
   </div>
 </div>
@@ -3439,11 +3542,18 @@ const state = {
   // ── Roles, team, inventory, sales, HR ──
   me: { role: 'pending', permissions: {}, commissionPct: 0, salary: null, position: '', workArrangement: '', email: '', name: '' },
   team: [],
-  inventory: [],
-  sales: [],
   workLogs: [],
+  companySettings: { budgetLines: null, activeMonth: null, currency: null },
+  categories: [],
+  variants: [],
+  stockMovements: [],
+  customers: [],
+  orders: [],
+  orderItems: [],
   invEditId: null,
-  saleItemId: null,
+  variantEditId: null,
+  restockVariantId: null,
+  orderLines: [],
 };
 
 const PERM_KEYS = ['finance_view','finance_edit','sales_log','inventory_view','inventory_edit','hr_view_all','hr_edit_salary','team_admin'];
@@ -4119,8 +4229,12 @@ const TAB_TITLES = {
   shopping:   'Shopping List',
   planner:    'Planner',
   settings:   'Profile & Settings',
-  sales:      'Sales & Inventory',
-  hr:         'Team & HR',
+  salesdash:  'Sales & Inventory Dashboard',
+  inventory:  'Inventory',
+  categories: 'Product Categories',
+  orders:     'Orders',
+  hrdash:     'HR Dashboard',
+  hr:         'My Profile & Hours',
 };
 
 function switchTab(tabId) {
@@ -4156,7 +4270,11 @@ function switchTab(tabId) {
   if (tabId === 'financialyear') renderFinancialYear();
   if (tabId === 'summaryreport') renderSummaryReport();
   if (tabId === 'settings')   renderSettings();
-  if (tabId === 'sales')      renderSales();
+  if (tabId === 'salesdash')  renderSalesDash();
+  if (tabId === 'inventory')  renderInventory();
+  if (tabId === 'categories') renderCategories();
+  if (tabId === 'orders')     renderOrders();
+  if (tabId === 'hrdash')     renderHRDash();
   if (tabId === 'hr')         renderHR();
 }
 
@@ -4352,6 +4470,7 @@ function setActiveMonth(idx) {
   document.querySelectorAll('.month-tab').forEach((t, i) => {
     t.classList.toggle('active', i === idx);
   });
+  saveCompanySettingsDebounced();
 }
 
 function addBudgetLine(type) {
@@ -4362,17 +4481,20 @@ function addBudgetLine(type) {
   }
   state.budgetLines[type].push({ id: Date.now(), name: '', limit: 0 });
   renderBudgetLines();
+  saveCompanySettingsDebounced();
 }
 
 function removeBudgetLine(type, id) {
   state.budgetLines[type] = state.budgetLines[type].filter(l => l.id !== id);
   renderBudgetLines();
+  saveCompanySettingsDebounced();
 }
 
 function updateBudgetLine(type, id, field, val) {
   setTimeout(renderTotalBudget, 50);
   const line = state.budgetLines[type].find(l => l.id === id);
   if (line) line[field] = field === 'limit' ? parseFloat(val) || 0 : val;
+  saveCompanySettingsDebounced();
 }
 
 // 
@@ -4626,189 +4748,435 @@ function deleteRecItem(type, id) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// SALES & INVENTORY
+// SALES & INVENTORY  (categories → variants, restock, orders)
 // ══════════════════════════════════════════════════════════════════
-
-function renderSales() {
-  const invList = document.getElementById('inventoryList');
-  const noInv = document.getElementById('noInventory');
-  invList.innerHTML = '';
-  if (!state.inventory.length) {
-    noInv.style.display = '';
-  } else {
-    noInv.style.display = 'none';
-    state.inventory.forEach(item => {
-      const low = item.qty <= item.lowStock;
-      const row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:rgba(228,210,215,.25);';
-      row.innerHTML = `
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:700;color:var(--espresso);">${escapeHtml(item.name)} ${low ? '<span class="low-stock-badge">Low Stock</span>' : ''}</div>
-          <div style="font-size:11px;color:var(--dusty);">${escapeHtml(item.category||'Uncategorised')}${item.sku ? ' · SKU '+escapeHtml(item.sku) : ''} · Cost ${fmt(item.costPrice)} · Sells for ${fmt(item.salePrice)}</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:15px;font-weight:900;color:${low?'#c0392b':'var(--espresso)'};">${item.qty}</div>
-          <div style="font-size:10px;color:var(--dusty);">in stock</div>
-        </div>
-        <div class="inv-edit-only" style="display:flex;gap:6px;">
-          <button class="btn-icon" onclick="openInvModal(${item.id})" title="Edit">✎</button>
-          <button class="btn-icon delete" onclick="deleteInvItem(${item.id})" title="Delete">×</button>
-        </div>`;
-      invList.appendChild(row);
-    });
-  }
-  document.getElementById('lowStockCount').textContent = state.inventory.filter(i => i.qty <= i.lowStock).length;
-
-  // Sale item select + preview
-  const sel = document.getElementById('saleItemSelect');
-  const prevVal = sel.value;
-  sel.innerHTML = state.inventory.map(i => `<option value="${i.id}">${escapeHtml(i.name)} (${i.qty} in stock)</option>`).join('');
-  if (prevVal && state.inventory.some(i => String(i.id) === prevVal)) sel.value = prevVal;
-  if (sel.value && !document.getElementById('saleUnitPrice').value) {
-    const it = state.inventory.find(i => String(i.id) === sel.value);
-    if (it) document.getElementById('saleUnitPrice').value = it.salePrice;
-  }
-  _updateSalePreview();
-
-  // Sales log table
-  const tbody = document.getElementById('salesLogBody');
-  const noSales = document.getElementById('noSales');
-  if (!state.sales.length) {
-    tbody.innerHTML = ''; noSales.style.display = '';
-  } else {
-    noSales.style.display = 'none';
-    tbody.innerHTML = state.sales.map(s => `
-      <tr style="border-top:1px solid rgba(177,93,112,.08);">
-        <td style="padding:7px 8px;">${s.date}</td>
-        <td style="padding:7px 8px;">${escapeHtml(s.itemName)}</td>
-        <td style="padding:7px 8px;">${s.qty}</td>
-        <td style="padding:7px 8px;font-weight:700;">${fmt(s.totalRevenue)}</td>
-        <td style="padding:7px 8px;" class="finance-col">${fmt(s.profit)}</td>
-        <td style="padding:7px 8px;color:#3d7a48;">${fmt(s.commissionAmount)}</td>
-      </tr>`).join('');
-  }
-
-  // My sales this month
-  const now = new Date();
-  const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const mySales = state.sales.filter(s => s.soldBy === currentUser?.id && s.date && s.date.startsWith(ym));
-  document.getElementById('mySalesMonthTotal').textContent = fmt(mySales.reduce((s,x)=>s+x.totalRevenue,0));
-  document.getElementById('mySalesMonthCount').textContent = `${mySales.length} sale${mySales.length===1?'':'s'}`;
-  document.getElementById('myCommissionMonthTotal').textContent = fmt(mySales.reduce((s,x)=>s+x.commissionAmount,0));
-  document.getElementById('myCommissionRate').textContent = state.me.commissionPct;
-}
 
 function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str ?? ''; return d.innerHTML; }
 
-function openInvModal(id) {
-  state.invEditId = id || null;
-  document.getElementById('invModalTitle').textContent = id ? 'Edit Inventory Item' : '+ Add Inventory Item';
-  const item = id ? state.inventory.find(i => i.id === id) : null;
-  document.getElementById('invName').value = item ? item.name : '';
-  document.getElementById('invSku').value = item ? item.sku : '';
-  document.getElementById('invCategory').value = item ? item.category : '';
-  document.getElementById('invCostPrice').value = item ? item.costPrice : '';
-  document.getElementById('invSalePrice').value = item ? item.salePrice : '';
-  document.getElementById('invQty').value = item ? item.qty : 0;
-  document.getElementById('invLowStock').value = item ? item.lowStock : 5;
-  document.getElementById('invModal').style.display = 'flex';
-}
-function closeInvModal() { document.getElementById('invModal').style.display = 'none'; }
-
-async function saveInvItem() {
-  const name = document.getElementById('invName').value.trim();
-  if (!name) { showToast('Please enter an item name', 'error'); return; }
-  const payload = {
-    name,
-    sku: document.getElementById('invSku').value.trim(),
-    category: document.getElementById('invCategory').value.trim(),
-    cost_price: parseFloat(document.getElementById('invCostPrice').value) || 0,
-    sale_price: parseFloat(document.getElementById('invSalePrice').value) || 0,
-    quantity: parseInt(document.getElementById('invQty').value) || 0,
-    low_stock_threshold: parseInt(document.getElementById('invLowStock').value) || 5,
-  };
-  try {
-    if (state.invEditId) {
-      const { error } = await sb.from('inventory_items').update(payload).eq('id', state.invEditId);
-      if (error) throw error;
-    } else {
-      const { error } = await sb.from('inventory_items').insert({ ...payload, created_by: currentUser.id });
-      if (error) throw error;
-    }
-    closeInvModal();
-    await loadAllData();
-    renderSales();
-    showToast('Inventory item saved', 'success');
-  } catch (err) { showToast(err.message || 'Could not save item', 'error'); }
+function variantStatusBadge(v) {
+  if (v.qty <= 0) return { label: 'Out of Stock', cls: 'low-stock-badge' };
+  if (v.qty <= v.lowStock) return { label: 'Running Low', cls: 'low-stock-badge' };
+  if (v.incomingQty > 0) return { label: `${v.incomingQty} On The Way`, cls: 'perm-badge' };
+  return { label: 'In Stock', cls: 'perm-badge' };
 }
 
-async function deleteInvItem(id) {
-  if (!confirm('Delete this inventory item? This cannot be undone.')) return;
+function currentMonthStr() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+}
+
+// ── Sales & Inventory Dashboard ──
+function renderSalesDash() {
+  const ym = currentMonthStr();
+  const monthOrders = state.orders.filter(o => o.date && o.date.startsWith(ym));
+  document.getElementById('sdSalesMonthTotal').textContent = fmt(monthOrders.reduce((s,o)=>s+o.totalAmount,0));
+  document.getElementById('sdSalesMonthCount').textContent = `${monthOrders.length} order${monthOrders.length===1?'':'s'}`;
+
+  const myOrders = monthOrders.filter(o => o.soldBy === currentUser?.id);
+  document.getElementById('sdMyCommission').textContent = fmt(myOrders.reduce((s,o)=>s+o.commissionAmount,0));
+  document.getElementById('sdMyCommissionRate').textContent = state.me.commissionPct;
+
+  const stockValue = state.variants.reduce((s,v) => s + v.qty * v.costPrice, 0);
+  document.getElementById('sdStockValue').textContent = fmt(stockValue);
+  document.getElementById('sdVariantCount').textContent = `${state.variants.length} product${state.variants.length===1?'':'s'}`;
+
+  const attention = state.variants.filter(v => v.qty <= v.lowStock);
+  document.getElementById('sdLowStockCount').textContent = attention.length;
+
+  const lowList = document.getElementById('sdLowStockList');
+  lowList.innerHTML = attention.length ? attention.slice(0,8).map(v => {
+    const badge = variantStatusBadge(v);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(228,210,215,.25);border-radius:10px;font-size:12px;">
+      <span>${escapeHtml(v.name)}</span>
+      <span class="${badge.cls}">${badge.label} — ${v.qty} left</span>
+    </div>`;
+  }).join('') : `<div style="text-align:center;color:var(--dusty);font-size:12px;padding:14px;">Everything's well stocked.</div>`;
+
+  const recentBox = document.getElementById('sdRecentOrders');
+  const recent = state.orders.slice(0, 8);
+  recentBox.innerHTML = recent.length ? recent.map(o => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(228,210,215,.25);border-radius:10px;font-size:12px;">
+      <span>${escapeHtml(o.customerName || 'Walk-in')} · ${o.date}</span>
+      <strong>${fmt(o.totalAmount)}</strong>
+    </div>`).join('') : `<div style="text-align:center;color:var(--dusty);font-size:12px;padding:14px;">No orders yet — log your first sale on the Orders tab.</div>`;
+}
+
+// ── Categories ──
+function renderCategories() {
+  const list = document.getElementById('categoryList');
+  const noCategories = document.getElementById('noCategories');
+  if (!state.categories.length) {
+    list.innerHTML = ''; noCategories.style.display = '';
+  } else {
+    noCategories.style.display = 'none';
+    list.innerHTML = state.categories.map(c => {
+      const count = state.variants.filter(v => v.categoryId === c.id).length;
+      return `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(228,210,215,.25);">
+        <input type="text" class="form-input" style="flex:1;" value="${escapeHtml(c.name)}" onchange="renameCategory(${c.id}, this.value)" />
+        <span style="font-size:11px;color:var(--dusty);white-space:nowrap;">${count} product${count===1?'':'s'}</span>
+        <button class="btn-icon delete inv-edit-only" onclick="deleteCategory(${c.id})" title="Delete">×</button>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('categoryLimitNote').textContent = `${state.categories.length}/10 categories used`;
+}
+
+async function addCategory() {
+  if (state.categories.length >= 10) { showToast('Maximum 10 categories for now', 'error'); return; }
+  const name = prompt('Category name (e.g. Notebooks, Stickers):');
+  if (!name || !name.trim()) return;
   try {
-    const { error } = await sb.from('inventory_items').delete().eq('id', id);
+    const { error } = await sb.from('inventory_categories').insert({ name: name.trim(), sort_order: state.categories.length, created_by: currentUser.id });
     if (error) throw error;
     await loadAllData();
-    renderSales();
-    showToast('Item deleted', 'success');
-  } catch (err) { showToast(err.message || 'Could not delete item', 'error'); }
+    renderCategories();
+    showToast('Category added', 'success');
+  } catch (err) { showToast(err.message || 'Could not add category', 'error'); }
 }
 
-function _updateSalePreview() {
-  const sel = document.getElementById('saleItemSelect');
-  const item = state.inventory.find(i => String(i.id) === sel.value);
-  const qty = parseInt(document.getElementById('saleQty').value) || 0;
-  const unitPrice = parseFloat(document.getElementById('saleUnitPrice').value) || 0;
-  const revenue = qty * unitPrice;
-  const commissionPct = state.me.commissionPct || 0;
-  const commission = revenue * (commissionPct / 100);
-  document.getElementById('salePreviewRevenue').textContent = fmt(revenue);
-  document.getElementById('salePreviewPct').textContent = commissionPct;
-  document.getElementById('salePreviewCommission').textContent = fmt(commission);
-  document.getElementById('salePreviewStock').textContent = item ? Math.max(0, item.qty - qty) : 0;
-}
-
-async function logSale() {
-  const sel = document.getElementById('saleItemSelect');
-  const item = state.inventory.find(i => String(i.id) === sel.value);
-  if (!item) { showToast('Add an inventory item first', 'error'); return; }
-  const qty = parseInt(document.getElementById('saleQty').value) || 0;
-  const unitPrice = parseFloat(document.getElementById('saleUnitPrice').value) || 0;
-  if (qty <= 0) { showToast('Enter a quantity greater than 0', 'error'); return; }
-  if (qty > item.qty) { showToast(`Only ${item.qty} in stock`, 'error'); return; }
-  const revenue = qty * unitPrice;
-  const profit = revenue - (qty * item.costPrice);
-  const commissionPct = state.me.commissionPct || 0;
-  const commissionAmount = revenue * (commissionPct / 100);
+async function renameCategory(id, name) {
+  if (!name.trim()) return;
   try {
-    // Auto-feed into Finance Income
+    const { error } = await sb.from('inventory_categories').update({ name: name.trim() }).eq('id', id);
+    if (error) throw error;
+    const c = state.categories.find(x => x.id === id); if (c) c.name = name.trim();
+    showToast('Category renamed', 'success');
+  } catch (err) { showToast(err.message || 'Could not rename', 'error'); }
+}
+
+async function deleteCategory(id) {
+  const count = state.variants.filter(v => v.categoryId === id).length;
+  if (count > 0 && !confirm(`This category has ${count} product(s) in it. Deleting it will also delete those products. Continue?`)) return;
+  try {
+    const { error } = await sb.from('inventory_categories').delete().eq('id', id);
+    if (error) throw error;
+    await loadAllData();
+    renderCategories();
+    showToast('Category deleted', 'success');
+  } catch (err) { showToast(err.message || 'Could not delete category', 'error'); }
+}
+
+// ── Inventory (variants under categories) ──
+function renderInventory() {
+  const wrap = document.getElementById('inventoryByCategory');
+  const noCategories = document.getElementById('noInventoryCategories');
+  if (!state.categories.length) {
+    wrap.innerHTML = ''; noCategories.style.display = '';
+    return;
+  }
+  noCategories.style.display = 'none';
+  wrap.innerHTML = state.categories.map(cat => {
+    const variants = state.variants.filter(v => v.categoryId === cat.id);
+    return `
+    <div>
+      <div class="section-header">
+        <div class="section-dot"></div>
+        <div class="section-title">${escapeHtml(cat.name)}</div>
+        <button class="btn-secondary inv-edit-only" style="margin-left:auto;padding:6px 14px;font-size:11px;" onclick="openVariantModal(null, ${cat.id})">+ Add Variant</button>
+      </div>
+      <div class="card">
+        ${variants.length ? variants.map(v => {
+          const badge = variantStatusBadge(v);
+          return `
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:rgba(228,210,215,.25);margin-bottom:8px;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:700;color:var(--espresso);">${escapeHtml(v.name)} <span class="${badge.cls}">${badge.label}</span></div>
+              <div style="font-size:11px;color:var(--dusty);">${v.source ? 'Source: '+escapeHtml(v.source)+' · ' : ''}${v.sku ? 'SKU '+escapeHtml(v.sku)+' · ' : ''}Cost ${fmt(v.costPrice)} · Sells for ${fmt(v.salePrice)}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:15px;font-weight:900;color:${v.qty<=v.lowStock?'#c0392b':'var(--espresso)'};">${v.qty}</div>
+              <div style="font-size:10px;color:var(--dusty);">in stock</div>
+            </div>
+            <div class="inv-edit-only" style="display:flex;gap:6px;">
+              <button class="btn-secondary" style="padding:7px 12px;font-size:11px;" onclick="openRestockModal(${v.id})">+ Restock</button>
+              <button class="btn-icon" onclick="openVariantModal(${v.id})" title="Edit">✎</button>
+              <button class="btn-icon delete" onclick="deleteVariant(${v.id})" title="Delete">×</button>
+            </div>
+          </div>`;
+        }).join('') : `<div style="text-align:center;color:var(--dusty);font-size:12px;padding:16px;">No variants yet in this category.</div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function _categoryOptionsHtml(selectedId) {
+  return state.categories.map(c => `<option value="${c.id}" ${c.id===selectedId?'selected':''}>${escapeHtml(c.name)}</option>`).join('');
+}
+
+function openVariantModal(id, presetCategoryId) {
+  if (!state.categories.length) { showToast('Add a category first', 'error'); return; }
+  state.variantEditId = id || null;
+  const v = id ? state.variants.find(x => x.id === id) : null;
+  document.getElementById('variantModalTitle').textContent = id ? 'Edit Product Variant' : '+ Add Product Variant';
+  document.getElementById('variantCategory').innerHTML = _categoryOptionsHtml(v ? v.categoryId : presetCategoryId);
+  document.getElementById('variantName').value = v ? v.name : '';
+  document.getElementById('variantSource').value = v ? v.source : '';
+  document.getElementById('variantSku').value = v ? v.sku : '';
+  document.getElementById('variantCostPrice').value = v ? v.costPrice : '';
+  document.getElementById('variantSalePrice').value = v ? v.salePrice : '';
+  document.getElementById('variantQty').value = v ? v.qty : 0;
+  document.getElementById('variantLowStock').value = v ? v.lowStock : 5;
+  document.getElementById('variantModal').style.display = 'flex';
+}
+function closeVariantModal() { document.getElementById('variantModal').style.display = 'none'; }
+
+async function saveVariant() {
+  const name = document.getElementById('variantName').value.trim();
+  if (!name) { showToast('Please enter a name (e.g. "Blue / A5")', 'error'); return; }
+  const payload = {
+    category_id: parseInt(document.getElementById('variantCategory').value),
+    name,
+    source: document.getElementById('variantSource').value.trim(),
+    sku: document.getElementById('variantSku').value.trim(),
+    cost_price: parseFloat(document.getElementById('variantCostPrice').value) || 0,
+    sale_price: parseFloat(document.getElementById('variantSalePrice').value) || 0,
+    low_stock_threshold: parseInt(document.getElementById('variantLowStock').value) || 5,
+  };
+  try {
+    if (state.variantEditId) {
+      const { error } = await sb.from('inventory_variants').update(payload).eq('id', state.variantEditId);
+      if (error) throw error;
+    } else {
+      payload.quantity = parseInt(document.getElementById('variantQty').value) || 0;
+      const { error } = await sb.from('inventory_variants').insert({ ...payload, created_by: currentUser.id });
+      if (error) throw error;
+    }
+    closeVariantModal();
+    await loadAllData();
+    renderInventory();
+    showToast('Product saved', 'success');
+  } catch (err) { showToast(err.message || 'Could not save product', 'error'); }
+}
+
+async function deleteVariant(id) {
+  if (!confirm('Delete this product variant? This cannot be undone.')) return;
+  try {
+    const { error } = await sb.from('inventory_variants').delete().eq('id', id);
+    if (error) throw error;
+    await loadAllData();
+    renderInventory();
+    showToast('Product deleted', 'success');
+  } catch (err) { showToast(err.message || 'Could not delete product', 'error'); }
+}
+
+// ── Restock (with on-the-way / delivered pipeline) ──
+function openRestockModal(variantId) {
+  state.restockVariantId = variantId;
+  const v = state.variants.find(x => x.id === variantId);
+  if (!v) return;
+  document.getElementById('restockVariantName').textContent = v.name;
+  document.getElementById('restockCurrentQty').textContent = `${v.qty} in stock${v.incomingQty ? ` · ${v.incomingQty} already on the way` : ''}`;
+  document.getElementById('restockQty').value = '';
+  document.getElementById('restockStatus').value = 'delivered';
+  document.getElementById('restockSource').value = v.source || '';
+  document.getElementById('restockNote').value = '';
+  document.getElementById('restockModal').style.display = 'flex';
+}
+function closeRestockModal() { document.getElementById('restockModal').style.display = 'none'; }
+
+async function saveRestock() {
+  const v = state.variants.find(x => x.id === state.restockVariantId);
+  if (!v) return;
+  const qty = parseInt(document.getElementById('restockQty').value) || 0;
+  if (qty <= 0) { showToast('Enter a quantity greater than 0', 'error'); return; }
+  const status = document.getElementById('restockStatus').value; // 'delivered' | 'on_the_way'
+  const source = document.getElementById('restockSource').value.trim();
+  const note = document.getElementById('restockNote').value.trim();
+  try {
+    const updates = { source: source || v.source };
+    if (status === 'delivered') updates.quantity = v.qty + qty;
+    else updates.incoming_qty = v.incomingQty + qty;
+    const { error } = await sb.from('inventory_variants').update(updates).eq('id', v.id);
+    if (error) throw error;
+    await sb.from('stock_movements').insert({
+      variant_id: v.id, change_qty: qty,
+      movement_type: status === 'delivered' ? 'restock_received' : 'restock_ordered',
+      note, logged_by: currentUser.id,
+    });
+    closeRestockModal();
+    await loadAllData();
+    renderInventory();
+    if (document.getElementById('tab-salesdash')?.classList.contains('active')) renderSalesDash();
+    showToast(status === 'delivered' ? 'Stock added' : 'Marked as on the way', 'success');
+  } catch (err) { showToast(err.message || 'Could not update stock', 'error'); }
+}
+
+async function markVariantDelivered(variantId) {
+  const v = state.variants.find(x => x.id === variantId);
+  if (!v || v.incomingQty <= 0) return;
+  try {
+    const { error } = await sb.from('inventory_variants').update({ quantity: v.qty + v.incomingQty, incoming_qty: 0 }).eq('id', v.id);
+    if (error) throw error;
+    await sb.from('stock_movements').insert({ variant_id: v.id, change_qty: v.incomingQty, movement_type: 'restock_received', note: 'Marked delivered', logged_by: currentUser.id });
+    await loadAllData();
+    renderInventory();
+    showToast('Marked as delivered', 'success');
+  } catch (err) { showToast(err.message || 'Could not update', 'error'); }
+}
+
+// ── Orders (customer + multi-item, auto-deducts stock) ──
+function renderOrders() {
+  const tbody = document.getElementById('ordersLogBody');
+  const noOrders = document.getElementById('noOrders');
+  if (!state.orders.length) {
+    tbody.innerHTML = ''; noOrders.style.display = '';
+  } else {
+    noOrders.style.display = 'none';
+    tbody.innerHTML = state.orders.map(o => {
+      const items = state.orderItems.filter(i => i.orderId === o.id);
+      const itemsLabel = items.map(i => `${escapeHtml(i.variantName)} ×${i.qty}`).join(', ') || '—';
+      return `
+      <tr style="border-top:1px solid rgba(177,93,112,.08);">
+        <td style="padding:7px 8px;">${o.date}</td>
+        <td style="padding:7px 8px;">${escapeHtml(o.customerName || 'Walk-in')}</td>
+        <td style="padding:7px 8px;">${itemsLabel}</td>
+        <td style="padding:7px 8px;font-weight:700;">${fmt(o.totalAmount)}</td>
+        <td style="padding:7px 8px;" class="finance-col">${fmt(o.totalProfit)}</td>
+        <td style="padding:7px 8px;color:#3d7a48;">${fmt(o.commissionAmount)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  const datalist = document.getElementById('customerNamesList');
+  if (datalist) datalist.innerHTML = state.customers.map(c => `<option value="${escapeHtml(c.name)}">`).join('');
+
+  if (!state.orderLines.length) addOrderLine();
+  else renderOrderLines();
+}
+
+function addOrderLine() {
+  if (!state.variants.length) { showToast('Add a product to inventory first', 'error'); return; }
+  state.orderLines.push({ variantId: state.variants[0].id, qty: 1, unitPrice: state.variants[0].salePrice });
+  renderOrderLines();
+}
+function removeOrderLine(idx) {
+  state.orderLines.splice(idx, 1);
+  renderOrderLines();
+}
+function updateOrderLine(idx, field, value) {
+  const line = state.orderLines[idx];
+  if (!line) return;
+  if (field === 'variantId') {
+    line.variantId = parseInt(value);
+    const v = state.variants.find(x => x.id === line.variantId);
+    if (v) line.unitPrice = v.salePrice;
+  } else if (field === 'qty') {
+    line.qty = parseInt(value) || 0;
+  } else if (field === 'unitPrice') {
+    line.unitPrice = parseFloat(value) || 0;
+  }
+  renderOrderLines(true);
+}
+
+function renderOrderLines(skipRebuildInputs) {
+  const box = document.getElementById('orderLineItems');
+  if (!skipRebuildInputs) {
+    box.innerHTML = state.orderLines.map((line, idx) => `
+      <div style="display:flex;gap:6px;align-items:flex-end;">
+        <div style="flex:2;">
+          <label class="form-label">Product</label>
+          <select class="form-input" onchange="updateOrderLine(${idx},'variantId',this.value)">
+            ${state.variants.map(v => `<option value="${v.id}" ${v.id===line.variantId?'selected':''}>${escapeHtml(v.name)} (${v.qty} in stock)</option>`).join('')}
+          </select>
+        </div>
+        <div style="flex:1;">
+          <label class="form-label">Qty</label>
+          <input type="number" class="form-input" min="1" value="${line.qty}" oninput="updateOrderLine(${idx},'qty',this.value)" />
+        </div>
+        <div style="flex:1;">
+          <label class="form-label">Price</label>
+          <input type="number" class="form-input" min="0" step="0.01" value="${line.unitPrice}" oninput="updateOrderLine(${idx},'unitPrice',this.value)" />
+        </div>
+        <button class="btn-icon delete" style="margin-bottom:2px;" onclick="removeOrderLine(${idx})" title="Remove">×</button>
+      </div>`).join('');
+  }
+  const total = state.orderLines.reduce((s,l) => s + l.qty * l.unitPrice, 0);
+  const commissionPct = state.me.commissionPct || 0;
+  document.getElementById('orderPreviewTotal').textContent = fmt(total);
+  document.getElementById('orderPreviewPct').textContent = commissionPct;
+  document.getElementById('orderPreviewCommission').textContent = fmt(total * (commissionPct/100));
+}
+
+async function submitOrder() {
+  if (!state.orderLines.length) { showToast('Add at least one product', 'error'); return; }
+  for (const line of state.orderLines) {
+    const v = state.variants.find(x => x.id === line.variantId);
+    if (!v) { showToast('Select a valid product for every line', 'error'); return; }
+    if (line.qty <= 0) { showToast('Quantity must be greater than 0', 'error'); return; }
+    if (line.qty > v.qty) { showToast(`Only ${v.qty} of "${v.name}" in stock`, 'error'); return; }
+  }
+  const customerName = document.getElementById('orderCustomerName').value.trim();
+  const customerPhone = document.getElementById('orderCustomerPhone').value.trim();
+  const total = state.orderLines.reduce((s,l) => s + l.qty * l.unitPrice, 0);
+  const totalProfit = state.orderLines.reduce((s,l) => { const v = state.variants.find(x=>x.id===l.variantId); return s + l.qty * (l.unitPrice - (v?v.costPrice:0)); }, 0);
+  const commissionPct = state.me.commissionPct || 0;
+  const commissionAmount = total * (commissionPct / 100);
+  try {
+    let customerId = null;
+    if (customerName) {
+      const existing = state.customers.find(c => c.name.toLowerCase() === customerName.toLowerCase());
+      if (existing) { customerId = existing.id; }
+      else {
+        const { data: newCust, error: custErr } = await sb.from('customers').insert({ name: customerName, phone: customerPhone, created_by: currentUser.id }).select().single();
+        if (!custErr && newCust) customerId = newCust.id;
+      }
+    }
+
     let linkedEntryId = null;
     const { data: entryData, error: entryErr } = await sb.from('entries').insert({
-      user_id: currentUser.id, type: 'income', amount: revenue,
-      category: 'Sales / Revenue', notes: `Sale: ${item.name} x${qty}`, entry_date: new Date().toISOString().slice(0,10),
+      user_id: currentUser.id, type: 'income', amount: total,
+      category: 'Sales / Revenue', notes: `Order: ${customerName || 'Walk-in'} (${state.orderLines.length} item${state.orderLines.length===1?'':'s'})`,
+      entry_date: new Date().toISOString().slice(0,10),
     }).select().single();
     if (!entryErr && entryData) linkedEntryId = entryData.id;
 
-    const { error: saleErr } = await sb.from('sales').insert({
-      item_id: item.id, item_name: item.name, quantity: qty, sale_price: unitPrice,
-      cost_price: item.costPrice, total_revenue: revenue, profit,
+    const { data: orderData, error: orderErr } = await sb.from('orders').insert({
+      customer_id: customerId, customer_name: customerName || 'Walk-in',
+      total_amount: total, total_profit: totalProfit,
       commission_pct: commissionPct, commission_amount: commissionAmount,
       sold_by: currentUser.id, linked_entry_id: linkedEntryId,
-    });
-    if (saleErr) throw saleErr;
+    }).select().single();
+    if (orderErr) throw orderErr;
 
-    const { error: invErr } = await sb.from('inventory_items').update({ quantity: item.qty - qty }).eq('id', item.id);
-    if (invErr) throw invErr;
+    for (const line of state.orderLines) {
+      const v = state.variants.find(x => x.id === line.variantId);
+      await sb.from('order_items').insert({
+        order_id: orderData.id, variant_id: v.id, variant_name: v.name,
+        qty: line.qty, unit_price: line.unitPrice, cost_price: v.costPrice, line_total: line.qty * line.unitPrice,
+      });
+      await sb.from('inventory_variants').update({ quantity: v.qty - line.qty }).eq('id', v.id);
+    }
 
-    document.getElementById('saleQty').value = 1;
+    document.getElementById('orderCustomerName').value = '';
+    document.getElementById('orderCustomerPhone').value = '';
+    state.orderLines = [];
     await loadAllData();
-    renderSales();
-    showToast(`Sale logged — ${fmt(revenue)} recorded`, 'success');
-  } catch (err) { showToast(err.message || 'Could not log sale', 'error'); }
+    renderOrders();
+    showToast(`Order logged — ${fmt(total)} recorded`, 'success');
+  } catch (err) { showToast(err.message || 'Could not log order', 'error'); }
 }
 
 // ══════════════════════════════════════════════════════════════════
 // HR / TEAM
 // ══════════════════════════════════════════════════════════════════
+
+function renderHRDash() {
+  document.getElementById('hdHeadcount').textContent = state.team.filter(p => p.role !== 'pending').length;
+  const ym = currentMonthStr();
+  const hoursMonth = state.workLogs.filter(w => w.date && w.date.startsWith(ym)).reduce((s,w) => s + w.hours, 0);
+  document.getElementById('hdHoursMonth').textContent = `${hoursMonth}h`;
+  document.getElementById('hdPendingCount').textContent = state.team.filter(p => p.role === 'pending').length;
+
+  const mix = {};
+  state.team.forEach(p => { const key = p.workArrangement || 'Not set'; mix[key] = (mix[key]||0) + 1; });
+  const mixBox = document.getElementById('hdArrangementMix');
+  const entries = Object.entries(mix);
+  mixBox.innerHTML = entries.length ? entries.map(([label, count]) => `
+    <div style="display:flex;justify-content:space-between;padding:8px 10px;background:rgba(228,210,215,.25);border-radius:10px;font-size:12px;">
+      <span>${escapeHtml(label)}</span><strong>${count}</strong>
+    </div>`).join('') : `<div style="text-align:center;color:var(--dusty);font-size:12px;padding:14px;">No team data yet.</div>`;
+}
 
 function renderHR() {
   document.getElementById('hrPosition').value = state.me.position || '';
@@ -6665,7 +7033,7 @@ function renderCurrencySelect() {
 function setCurrencyFromSelect() {
   const code = document.getElementById('currencySelect')?.value;
   const found = CURRENCIES.find(c=>c.code===code);
-  if (found) { state.currency = found; _updateCurrencyPreview(); syncCurrencySymbols(); }
+  if (found) { state.currency = found; _updateCurrencyPreview(); syncCurrencySymbols(); saveCompanySettingsDebounced(); }
 }
 
 function _updateCurrencyPreview() {
@@ -7457,7 +7825,7 @@ function setFontSize(size) {
   // Persist immediately
   if (currentUser) {
     sb.from('profiles').update({
-      budget_lines: { ...state.budgetLines, currency: state.currency, landingPage: state.landingPage, fontSize: size, timers: state.timers, timerPrefs: state.timerPrefs, spotlightId: state.spotlightId, incomeMode: state.incomeMode }
+      budget_lines: { landingPage: state.landingPage, fontSize: size, timers: state.timers, timerPrefs: state.timerPrefs, spotlightId: state.spotlightId }
     }).eq('id', currentUser.id).then(()=>{});
   }
 }
@@ -7490,7 +7858,7 @@ window.executeClearData = async function() {
       }),
       sb.from('profiles').update({
         name: '', occupation: '', avatar_url: '',
-        budget_lines: { income:[], expense:[], savings:[], currency: state.currency, landingPage: state.landingPage },
+        budget_lines: { landingPage: state.landingPage },
       }).eq('id', uid),
     ]);
   }
@@ -8302,7 +8670,12 @@ function initApp() {
   try { _resumeTab = sessionStorage.getItem('_lastTab'); } catch(e) {}
   const financeTabs = ['income','expenses','savings','recurring'];
   let target = _resumeTab || state.landingPage || 'dashboard';
+  if (target === 'sales') target = 'salesdash';
+  if (target === 'hr' && !_resumeTab) target = 'hrdash';
   if (financeTabs.includes(target) && !can('finance_view')) target = 'dashboard';
+  if (target === 'dashboard' && !can('finance_view')) {
+    target = (can('sales_log') || can('inventory_view')) ? 'salesdash' : 'hrdash';
+  }
   switchTab(target);
   syncCurrencySymbols();
 }
@@ -8400,10 +8773,13 @@ function showToast(msg, type) {
 function _dbEntry(e)  { return { id: e.id, amount: parseFloat(e.amount), cat: e.category, desc: e.notes, date: e.entry_date }; }
 function _dbGoal(g)   { return { id: g.id, name: g.name, target: parseFloat(g.target), current: parseFloat(g.saved), icon: g.icon||'' }; }
 function _dbRec(r)    { const ic=r.icon||''; const isAnn=ic.startsWith('annual'); const mm=ic.match(/m:(\d+)/); return { id: r.id, name: r.name, amount: parseFloat(r.amount), day: r.day_of_month, category: r.category, icon:'', color: r.color||'#B15D70', freq: r._freq || (isAnn?'annual':'monthly'), month: r._month || (mm?parseInt(mm[1]):null) }; }
-function _dbInv(i)    { return { id: i.id, name: i.name, sku: i.sku||'', costPrice: parseFloat(i.cost_price)||0, salePrice: parseFloat(i.sale_price)||0, qty: i.quantity||0, lowStock: i.low_stock_threshold ?? 5, category: i.category||'' }; }
-function _dbSale(s)   { return { id: s.id, itemId: s.item_id, itemName: s.item_name, qty: s.quantity, salePrice: parseFloat(s.sale_price)||0, costPrice: parseFloat(s.cost_price)||0, totalRevenue: parseFloat(s.total_revenue)||0, profit: parseFloat(s.profit)||0, commissionPct: parseFloat(s.commission_pct)||0, commissionAmount: parseFloat(s.commission_amount)||0, soldBy: s.sold_by, date: s.sale_date }; }
 function _dbProfile(p){ return { id: p.id, name: p.name||'', email: p.email||'', role: p.role||'pending', permissions: p.permissions||{}, commissionPct: parseFloat(p.commission_pct)||0, salary: p.salary===null||p.salary===undefined?null:parseFloat(p.salary), position: p.position||'', workArrangement: p.work_arrangement||'' }; }
 function _dbWorkLog(w){ return { id: w.id, userId: w.user_id, date: w.log_date, hours: parseFloat(w.hours)||0, notes: w.notes||'' }; }
+function _dbCategory(c) { return { id: c.id, name: c.name, sortOrder: c.sort_order||0 }; }
+function _dbVariant(v)  { return { id: v.id, categoryId: v.category_id, name: v.name, sku: v.sku||'', source: v.source||'', costPrice: parseFloat(v.cost_price)||0, salePrice: parseFloat(v.sale_price)||0, qty: v.quantity||0, incomingQty: v.incoming_qty||0, lowStock: v.low_stock_threshold ?? 5, status: v.status||'in_stock' }; }
+function _dbCustomer(c) { return { id: c.id, name: c.name, phone: c.phone||'', email: c.email||'', notes: c.notes||'' }; }
+function _dbOrder(o)    { return { id: o.id, customerId: o.customer_id, customerName: o.customer_name||'', date: o.order_date, totalAmount: parseFloat(o.total_amount)||0, totalProfit: parseFloat(o.total_profit)||0, commissionPct: parseFloat(o.commission_pct)||0, commissionAmount: parseFloat(o.commission_amount)||0, soldBy: o.sold_by }; }
+function _dbOrderItem(i){ return { id: i.id, orderId: i.order_id, variantId: i.variant_id, variantName: i.variant_name, qty: i.qty, unitPrice: parseFloat(i.unit_price)||0, costPrice: parseFloat(i.cost_price)||0, lineTotal: parseFloat(i.line_total)||0 }; }
 
 // ── Load all data ─────────────────────────────────────────────────
 async function loadAllData() {
@@ -8422,17 +8798,15 @@ async function loadAllData() {
       state.profile.name       = prof.name || '';
       state.profile.occupation = prof.occupation || '';
       state.profile.avatar     = prof.avatar_url || '';
-      state.activeMonth        = prof.active_month ?? (new Date().getMonth());
       state.termsAcceptedAt    = prof.terms_accepted_at || null;
       state.activeTheme        = prof.active_theme || 'default';
       if (prof.custom_colors && Object.keys(prof.custom_colors).length) state.customColors = prof.custom_colors;
-      if (prof.budget_lines)   state.budgetLines = prof.budget_lines;
-      if (prof.budget_lines?.currency)    state.currency    = prof.budget_lines.currency;
+      // Personal (per-profile) preferences only — shared budget/currency/active-month now live in company_settings, loaded below.
       if (prof.budget_lines?.landingPage) state.landingPage  = prof.budget_lines.landingPage;
       if (prof.budget_lines?.fontSize)    state.fontSize    = prof.budget_lines.fontSize || 'normal';
       if (Array.isArray(prof.budget_lines?.timers)) state.timers = prof.budget_lines.timers.map(t=>({...t,_celebrated:!!t._celebrated}));
       if (prof.budget_lines?.timerPrefs)  state.timerPrefs  = prof.budget_lines.timerPrefs;
-      if (prof.budget_lines?.incomeMode)  state.incomeMode  = prof.budget_lines.incomeMode;
+      state.incomeMode = 'calendar'; // business revenue is continuous — the paycheck-timing toggle no longer applies
       state.darkMode = !!prof.budget_lines?.darkMode;
       if (prof.budget_lines?.spotlightId !== undefined) state.spotlightId = prof.budget_lines.spotlightId;
       // Load persisted routines (merge into defaults so gym/meal defaults are preserved if empty)
@@ -8467,16 +8841,33 @@ async function loadAllData() {
     // Second wave: RLS naturally scopes each of these to what this user is allowed to see
     // (own rows only, or the whole company, depending on their permissions).
     try {
-      const [invRes, salesRes, teamRes, wlRes] = await Promise.all([
-        sb.from('inventory_items').select('*').order('name'),
-        sb.from('sales').select('*').order('sale_date', { ascending: false }),
+      const [csRes, teamRes, wlRes, catRes, varRes, custRes, orderRes, orderItemRes] = await Promise.all([
+        sb.from('company_settings').select('*').eq('id', 1).maybeSingle(),
         sb.from('profiles').select('*').order('email'),
         sb.from('work_logs').select('*').order('log_date', { ascending: false }),
+        sb.from('inventory_categories').select('*').order('sort_order'),
+        sb.from('inventory_variants').select('*').order('name'),
+        sb.from('customers').select('*').order('name'),
+        sb.from('orders').select('*').order('order_date', { ascending: false }),
+        sb.from('order_items').select('*'),
       ]);
-      state.inventory = invRes.data ? invRes.data.map(_dbInv) : [];
-      state.sales     = salesRes.data ? salesRes.data.map(_dbSale) : [];
-      state.team      = teamRes.data ? teamRes.data.map(_dbProfile) : [];
-      state.workLogs  = wlRes.data ? wlRes.data.map(_dbWorkLog) : [];
+      if (csRes.data) {
+        const cs = csRes.data;
+        if (cs.budget_lines && (cs.budget_lines.income?.length || cs.budget_lines.expense?.length || cs.budget_lines.savings?.length)) {
+          state.budgetLines = { income: cs.budget_lines.income||[], expense: cs.budget_lines.expense||[], savings: cs.budget_lines.savings||[] };
+        }
+        state.activeMonth = cs.active_month ?? (new Date().getMonth());
+        if (cs.currency) state.currency = cs.currency;
+      } else {
+        state.activeMonth = new Date().getMonth();
+      }
+      state.team          = teamRes.data ? teamRes.data.map(_dbProfile) : [];
+      state.workLogs       = wlRes.data ? wlRes.data.map(_dbWorkLog) : [];
+      state.categories     = catRes.data ? catRes.data.map(_dbCategory) : [];
+      state.variants        = varRes.data ? varRes.data.map(_dbVariant) : [];
+      state.customers       = custRes.data ? custRes.data.map(_dbCustomer) : [];
+      state.orders          = orderRes.data ? orderRes.data.map(_dbOrder) : [];
+      state.orderItems      = orderItemRes.data ? orderItemRes.data.map(_dbOrderItem) : [];
     } catch (e2) { console.error('loadAllData (team/sales/inventory) error:', e2); }
 
     // Apply theme
@@ -8502,7 +8893,9 @@ async function handleLogout() {
   state.recurring = { expense: [], savings: [], income: [] };
   state.profile = { name: '', occupation: '', avatar: '' };
   state.me = { role: 'pending', permissions: {}, commissionPct: 0, salary: null, position: '', workArrangement: '', email: '', name: '' };
-  state.team = []; state.inventory = []; state.sales = []; state.workLogs = [];
+  state.team = []; state.workLogs = [];
+  state.categories = []; state.variants = []; state.stockMovements = [];
+  state.customers = []; state.orders = []; state.orderItems = []; state.orderLines = [];
 }
 
 // ── Override: saveEntry ───────────────────────────────────────────
@@ -8796,14 +9189,36 @@ window.saveSettings = async function() {
     name:         state.profile.name,
     occupation:   state.profile.occupation,
     avatar_url:   state.profile.avatar || '',
-    active_month: state.activeMonth,
     active_theme: state.activeTheme,
     custom_colors: state.customColors,
-    budget_lines: {...state.budgetLines, currency: state.currency, landingPage: state.landingPage, fontSize: state.fontSize, timers: state.timers, timerPrefs: state.timerPrefs, spotlightId: state.spotlightId, incomeMode: state.incomeMode, darkMode: state.darkMode},
+    budget_lines: { landingPage: state.landingPage, fontSize: state.fontSize, timers: state.timers, timerPrefs: state.timerPrefs, spotlightId: state.spotlightId, darkMode: state.darkMode },
   });
+  await saveCompanySettingsNow();
   if (error) showToast('Settings could not be saved', 'error');
   else showToast('Settings saved', 'success');
 };
+
+// ── Shared company settings (budget lines, active month, currency) ──
+let _companySettingsTimer = null;
+function saveCompanySettingsDebounced() {
+  if (!can('finance_edit')) return;
+  clearTimeout(_companySettingsTimer);
+  _companySettingsTimer = setTimeout(saveCompanySettingsNow, 500);
+}
+async function saveCompanySettingsNow() {
+  if (!can('finance_edit') || !currentUser) return;
+  try {
+    const { error } = await sb.from('company_settings').upsert({
+      id: 1,
+      budget_lines: { income: state.budgetLines.income, expense: state.budgetLines.expense, savings: state.budgetLines.savings },
+      active_month: state.activeMonth,
+      currency: state.currency,
+      updated_by: currentUser.id,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) console.error('company_settings save error', error);
+  } catch (e) { console.error('company_settings save error', e); }
+}
 
 // ── Override: handleAvatarUpload → Supabase Storage ───────────────
 window.handleAvatarUpload = async function(e) {
@@ -8871,6 +9286,7 @@ function applyPermissionGating() {
   document.body.classList.toggle('no-inventory-edit', !can('inventory_edit'));
   document.body.classList.toggle('no-sales-log', !can('sales_log'));
   document.body.classList.toggle('no-finance-view', !can('finance_view'));
+  document.body.classList.toggle('no-team-admin', !can('team_admin'));
 
   const teamPanel = document.getElementById('teamPermissionsCard');
   if (teamPanel) teamPanel.style.display = can('team_admin') ? '' : 'none';
@@ -9172,7 +9588,7 @@ window.deleteEventFromModal = async function() {
 async function _saveTimers() {
   if (!currentUser) return;
   const { error } = await sb.from('profiles').update({
-    budget_lines: { ...state.budgetLines, currency: state.currency, landingPage: state.landingPage, fontSize: state.fontSize, timers: state.timers, timerPrefs: state.timerPrefs, spotlightId: state.spotlightId, incomeMode: state.incomeMode }
+    budget_lines: { landingPage: state.landingPage, fontSize: state.fontSize, timers: state.timers, timerPrefs: state.timerPrefs, spotlightId: state.spotlightId }
   }).eq('id', currentUser.id);
   if (error) console.error('Timer save failed:', error);
 }
@@ -9202,7 +9618,7 @@ function setIncomeMode(mode) {
   });
   if (currentUser) {
     sb.from('profiles').update({
-      budget_lines: { ...state.budgetLines, currency: state.currency, landingPage: state.landingPage, fontSize: state.fontSize, timers: state.timers, timerPrefs: state.timerPrefs, spotlightId: state.spotlightId, incomeMode: mode }
+      budget_lines: { landingPage: state.landingPage, fontSize: state.fontSize, timers: state.timers, timerPrefs: state.timerPrefs, spotlightId: state.spotlightId }
     }).eq('id', currentUser.id).then(()=>{});
   }
   renderDashboard();
@@ -9228,7 +9644,7 @@ function toggleDarkMode() {
   if (moonIcon) moonIcon.style.display = isDark ? 'block' : 'none';
   if (currentUser) {
     sb.from('profiles').update({
-      budget_lines: { ...state.budgetLines, currency: state.currency, landingPage: state.landingPage, fontSize: state.fontSize, timers: state.timers, timerPrefs: state.timerPrefs, spotlightId: state.spotlightId, incomeMode: state.incomeMode, darkMode: isDark }
+      budget_lines: { landingPage: state.landingPage, fontSize: state.fontSize, timers: state.timers, timerPrefs: state.timerPrefs, spotlightId: state.spotlightId, darkMode: isDark }
     }).eq('id', currentUser.id).then(()=>{});
   }
 }
