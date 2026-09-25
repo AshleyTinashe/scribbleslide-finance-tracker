@@ -254,6 +254,7 @@
     transition: all .2s ease;
     position: relative;
     overflow: hidden;
+    min-width: 0;
   }
 
   .metric-card::before {
@@ -273,6 +274,7 @@
   .metric-actual {
     font-size: 28px; font-weight: 800; color: var(--espresso);
     letter-spacing: -1px; line-height: 1;
+    overflow-wrap: break-word;
   }
 
   .metric-budget {
@@ -596,6 +598,11 @@
   @media (max-width: 900px) {
     :root { --sidebar-w: 220px; }
     .tab-content { padding: 20px 16px; }
+  }
+
+  @media (max-width: 640px) {
+    #metricRow { grid-template-columns: 1fr !important; }
+    .metric-actual { font-size: 22px; }
   }
 
   /* 
@@ -1921,7 +1928,7 @@
             </div>
           </div>
           <div id="recIncomeList">
-            <div style="text-align:center;padding:20px;color:var(--dusty);font-size:13px;">No recurring income yet. Add your salary!</div>
+            <div style="text-align:center;padding:20px;color:var(--dusty);font-size:13px;">No recurring income yet. Add your regular income.</div>
           </div>
         </div>
 
@@ -3396,8 +3403,9 @@ function renderCalendar() {
     el.className = 'cal-day' + (d === today ? ' today' : '');
     el.textContent = d;
 
-    const incItems = _incRec.filter(r=>r.day===d);
-    const dueItems = _allRec.filter(r=>r.day===d);
+    // Items pinned to day 29-31 fall on the month's last day when that month is shorter
+    const incItems = _incRec.filter(r => r.day===d || (r.day>daysInMonth && d===daysInMonth));
+    const dueItems = _allRec.filter(r => r.day===d || (r.day>daysInMonth && d===daysInMonth));
     const hasInc = incItems.length > 0;
     const hasRec = dueItems.length > 0;
 
@@ -3450,21 +3458,24 @@ function renderDashboard() {
   document.getElementById('dash-income-actual').textContent = fmt(totalInc);
   document.getElementById('dash-income-budget').textContent = `Budget: ${fmt(budgInc)}`;
   const incBadge = document.getElementById('dash-income-badge');
-  if (totalInc >= budgInc) { incBadge.textContent = 'Above Budget'; incBadge.className = 'metric-badge badge-good'; }
+  if (budgInc <= 0) { incBadge.textContent = 'No Budget Set'; incBadge.className = 'metric-badge badge-neutral'; }
+  else if (totalInc >= budgInc) { incBadge.textContent = 'Above Budget'; incBadge.className = 'metric-badge badge-good'; }
   else { const pct = Math.round((totalInc/budgInc)*100); incBadge.textContent = `${pct}% of Budget`; incBadge.className = 'metric-badge badge-warn'; }
 
   // Expense metric
   document.getElementById('dash-expense-actual').textContent = fmt(totalExp);
   document.getElementById('dash-expense-budget').textContent = `Budget: ${fmt(budgExp)} · Remaining: ${fmt(Math.max(0,budgExp-totalExp))}`;
   const expBadge = document.getElementById('dash-expense-badge');
-  if (totalExp > budgExp) { expBadge.textContent = 'Over Budget'; expBadge.className = 'metric-badge badge-warn'; }
+  if (budgExp <= 0) { expBadge.textContent = 'No Budget Set'; expBadge.className = 'metric-badge badge-neutral'; }
+  else if (totalExp > budgExp) { expBadge.textContent = 'Over Budget'; expBadge.className = 'metric-badge badge-warn'; }
   else { expBadge.textContent = `${Math.round((totalExp/budgExp)*100)}% Used`; expBadge.className = 'metric-badge badge-good'; }
 
   //Savings metric
   document.getElementById('dash-savings-actual').textContent = fmt(netSav);
   document.getElementById('dash-savings-budget').textContent = `Allocated: ${fmt(budgSav)} · Remaining: ${fmt(Math.max(0,budgSav-netSav))}`;
   const savBadge = document.getElementById('dash-savings-badge');
-  if (netSav >= budgSav) { savBadge.textContent = 'Target Met'; savBadge.className = 'metric-badge badge-good'; }
+  if (budgSav <= 0) { savBadge.textContent = 'No Target Set'; savBadge.className = 'metric-badge badge-neutral'; }
+  else if (netSav >= budgSav) { savBadge.textContent = 'Target Met'; savBadge.className = 'metric-badge badge-good'; }
   else if (netSav >= 0) { savBadge.textContent = `${fmt(budgSav - netSav)} to go`; savBadge.className = 'metric-badge badge-neutral'; }
   else { savBadge.textContent = 'In the Red'; savBadge.className = 'metric-badge badge-warn'; }
 
@@ -3873,8 +3884,13 @@ function openAddModal(type) {
   const cats = type === 'income' ? state.budgetLines.income.map(l => l.name)
     : type === 'savings' ? state.budgetLines.savings.map(l => l.name)
     : state.budgetLines.expense.map(l => l.name);
-  cats.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; catSel.appendChild(o); });
-  if (!cats.length) { const o = document.createElement('option'); o.value = type==='savings' ? 'Savings' : 'General'; o.textContent = o.value; catSel.appendChild(o); }
+  const defaultCats = type === 'income'
+    ? ['Sales / Revenue', 'Other Income', 'General']
+    : type === 'savings'
+    ? ['Savings']
+    : ['Rent', 'Inventory / Stock', 'Utilities', 'Wages', 'Supplies', 'Marketing', 'General'];
+  const list = cats.length ? cats : defaultCats;
+  list.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; catSel.appendChild(o); });
 
   const modal = document.getElementById('entryModal');
   modal.style.display = 'flex';
@@ -4175,7 +4191,7 @@ function renderRecurring() {
   const incItems = (state.recurring.income||[]).slice().sort((a,b) => a.day - b.day);
   if (incList) {
     incList.innerHTML = !incItems.length
-      ? `<div style="text-align:center;padding:20px;color:var(--dusty);font-size:13px;">No recurring income yet. Add your salary!</div>`
+      ? `<div style="text-align:center;padding:20px;color:var(--dusty);font-size:13px;">No recurring income yet. Add your regular income.</div>`
       : incItems.map(i => recCard(i,'income')).join('');
   }
 
@@ -4271,9 +4287,14 @@ function openRecModal(type) {
   // Populate category dropdown from budget lines
   const _catSel = document.getElementById('recCategory');
   const _lines  = type === 'expense' ? (state.budgetLines.expense||[]) : type === 'income' ? (state.budgetLines.income||[]) : (state.budgetLines.savings||[]);
+  const _defaultCats = type === 'expense'
+    ? ['Rent', 'Inventory / Stock', 'Utilities', 'Wages', 'Supplies', 'Marketing', 'General']
+    : type === 'income'
+    ? ['Sales / Revenue', 'Other Income', 'General']
+    : ['Savings'];
   _catSel.innerHTML = _lines.length
     ? _lines.map(l=>`<option value="${l.name}">${l.name}</option>`).join('') + '<option value="Other">Other</option>'
-    : '<option value="General">General</option><option value="Other">Other</option>';
+    : _defaultCats.map(c=>`<option value="${c}">${c}</option>`).join('') + '<option value="Other">Other</option>';
   const _fq = document.getElementById('recFreq'); if (_fq) { _fq.value='monthly'; document.getElementById('recMonthRow').style.display='none'; }
   document.getElementById('recModal').style.display = 'flex';
 }
@@ -6688,7 +6709,12 @@ function openEditRecModal(type, id) {
   document.getElementById('erColor').value    = (item.color||'').startsWith('#') ? item.color : '#B15D70';
   const _ecatSel = document.getElementById('erCategory');
   const _elines  = type === 'expense' ? (state.budgetLines.expense||[]) : type === 'income' ? (state.budgetLines.income||[]) : (state.budgetLines.savings||[]);
-  const _opts    = _elines.map(l=>l.name);
+  const _edefaultCats = type === 'expense'
+    ? ['Rent', 'Inventory / Stock', 'Utilities', 'Wages', 'Supplies', 'Marketing', 'General']
+    : type === 'income'
+    ? ['Sales / Revenue', 'Other Income', 'General']
+    : ['Savings'];
+  const _opts    = _elines.length ? _elines.map(l=>l.name) : _edefaultCats.slice();
   if (item.category && !_opts.includes(item.category)) _opts.push(item.category);
   _opts.push('Other');
   _ecatSel.innerHTML = _opts.map(o=>`<option value="${o}" ${o===item.category?'selected':''}>${o}</option>`).join('');
@@ -6881,6 +6907,35 @@ function _guessType(desc, amount, debit, credit) {
   return amount >= 0 ? 'income' : 'expense';
 }
 
+// Bank CSV dates are ambiguous between DD/MM/YYYY (South African/UK banks) and
+// MM/DD/YYYY (US banks). We default to day-first since that matches the
+// primary market, but fall back automatically when a value can only be a month.
+function _parseBankDate(raw) {
+  if (!raw) return null;
+  const s = String(raw).trim();
+  // Already ISO: YYYY-MM-DD
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m) return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
+  // Slash or dash separated numeric date: D/M/Y or D-M-Y
+  m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (m) {
+    let [, a, b, y] = m;
+    a = parseInt(a, 10); b = parseInt(b, 10);
+    let year = parseInt(y, 10); if (year < 100) year += 2000;
+    let day, month;
+    if (a > 12 && b <= 12) { day = a; month = b; }        // must be DD/MM
+    else if (b > 12 && a <= 12) { day = b; month = a; }    // must be MM/DD
+    else { day = a; month = b; }                           // ambiguous: default DD/MM
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    }
+    return null;
+  }
+  // Fallback: let the browser try (handles "15 Jan 2026", "Jan 15, 2026", etc.)
+  const d = new Date(s);
+  return isNaN(d) ? null : d.toISOString().slice(0,10);
+}
+
 function _parseCSV(text) {
   const lines = text.split(/\r?\n/).filter(l=>l.trim());
   if (lines.length < 2) return [];
@@ -6917,10 +6972,7 @@ function _parseCSV(text) {
     const type = _guessType(rawDesc, rawAmt, rawDebt, rawCred);
     const cat  = _guessCategory(rawDesc);
     // Parse date
-    let date = getTodayStr();
-    try {
-      const d = new Date(rawDate); if (!isNaN(d)) date = d.toISOString().slice(0,10);
-    } catch(_) {}
+    const date = _parseBankDate(rawDate) || getTodayStr();
     txns.push({ date, desc: rawDesc.slice(0,60), amount, type, cat });
   }
   return txns;
@@ -7749,23 +7801,6 @@ async function loadAllData() {
     if (entRes.data)  { state.entries.income = entRes.data.filter(e=>e.type==='income').map(_dbEntry); state.entries.expense = entRes.data.filter(e=>e.type==='expense').map(_dbEntry); }
     if (goalRes.data) { state.goals.short = goalRes.data.filter(g=>g.type==='short').map(_dbGoal); state.goals.long = goalRes.data.filter(g=>g.type==='long').map(_dbGoal); }
     if (recRes.data)  { state.recurring.expense = recRes.data.filter(r=>r.type==='expense').map(_dbRec); state.recurring.savings = recRes.data.filter(r=>r.type==='savings').map(_dbRec); state.recurring.income = recRes.data.filter(r=>r.type==='income').map(_dbRec); }
-    if (shopRes.data) state.shopping = shopRes.data.map(_dbShop);
-    if (evtRes.data)  state.events   = evtRes.data.map(_dbEvent);
-    if (taskRes.data) state.tasks = taskRes.data.map(_dbTask);
-    if (wlRes?.data) wlRes.data.forEach(w => {
-      state.wellnessLogs[w.log_date] = { water: parseFloat(w.water)||0, mood: w.mood||3, sleep: parseFloat(w.sleep)||0, exerciseMin: w.exercise_min||0, screenHours: parseFloat(w.screen_hours)||0 };
-    });
-    if (workRes?.data) workRes.data.forEach(w => {
-      state.workLogs[w.log_date] = { location: w.location||'', hours: parseFloat(w.hours)||0, notes: w.notes||'' };
-    });
-    if (habitsRes?.data) state.habits = habitsRes.data.map(h => ({ id: h.id, name: h.name, category: h.category||'general' }));
-    if (habitTicksRes?.data) {
-      state.habitLogs = {};
-      habitTicksRes.data.forEach(t => {
-        if (!state.habitLogs[t.log_date]) state.habitLogs[t.log_date] = [];
-        state.habitLogs[t.log_date].push(t.habit_id);
-      });
-    }
 
     // Apply theme
     document.body.className = state.activeTheme && state.activeTheme!=='default' ? 'authenticated theme-'+state.activeTheme : 'authenticated';
@@ -8328,13 +8363,16 @@ async function autoPopulateRecurring() {
   const monthNum = now.getMonth() + 1;
   const todayDay = now.getDate();
   const ms       = `${year}-${String(monthNum).padStart(2,'0')}`;
+  const daysInMonth = new Date(year, monthNum, 0).getDate();
   const inserts  = [];
 
   const _shouldRun = (item) => {
     if (item.freq === 'annual') {
       if (item.month !== monthNum) return false;
     }
-    return item.day <= todayDay; // due date has passed this month
+    // Items pinned to day 29-31 fall on this month's last day when it's shorter
+    const effectiveDay = Math.min(item.day, daysInMonth);
+    return effectiveDay <= todayDay; // due date has passed this month
   };
 
   const _alreadyLogged = (item, type) => {
@@ -8347,7 +8385,7 @@ async function autoPopulateRecurring() {
    ...(state.recurring.income||[]).map(i=>({...i,_t:'income'}))].forEach(item => {
     if (!_shouldRun(item)) return;
     if (_alreadyLogged(item, item._t)) return;
-    const dateStr = `${ms}-${String(Math.min(item.day, 28)).padStart(2,'0')}`;
+    const dateStr = `${ms}-${String(Math.min(item.day, daysInMonth)).padStart(2,'0')}`;
     inserts.push({
       user_id:    currentUser.id,
       type:       item._t==='income' ? 'income' : 'expense',
