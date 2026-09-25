@@ -605,6 +605,17 @@
     .metric-actual { font-size: 22px; }
   }
 
+  /* ── Role/permission gating ── */
+  body.no-finance-edit .fin-edit-only { display: none !important; }
+  body.no-inventory-edit .inv-edit-only { display: none !important; }
+  body.no-sales-log .sales-log-only { display: none !important; }
+  body.no-finance-view .finance-col { display: none !important; }
+  .perm-badge { display:inline-block; font-size:9px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; padding:3px 9px; border-radius:20px; background:rgba(177,93,112,.12); color:var(--berry); }
+  .low-stock-badge { display:inline-block; font-size:9px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; padding:3px 9px; border-radius:20px; background:rgba(192,57,43,.12); color:#c0392b; }
+  .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(177,93,112,.08); font-size:12px; }
+  .toggle-row:last-child { border-bottom:none; }
+  .team-card { border:1.5px solid rgba(177,93,112,.15); border-radius:16px; padding:16px 18px; margin-bottom:14px; background:var(--cream); }
+
   /* 
      THEME VARIABLES  (overrides :root via .theme-*)
       */
@@ -1633,12 +1644,20 @@
       <div class="nav-label">Overview</div>
       <button class="nav-btn active" data-tab="dashboard">Dashboard</button>
     </div>
-    <div class="nav-section">
+    <div class="nav-section" id="navSectionFinance">
       <div class="nav-label">Finance</div>
       <button class="nav-btn" data-tab="income">Income</button>
       <button class="nav-btn" data-tab="expenses">Expenses</button>
       <button class="nav-btn" data-tab="savings">Savings</button>
       <button class="nav-btn" data-tab="recurring">Recurring Tracker</button>
+    </div>
+    <div class="nav-section" id="navSectionSales" style="display:none;">
+      <div class="nav-label">Sales</div>
+      <button class="nav-btn" data-tab="sales">Sales &amp; Inventory</button>
+    </div>
+    <div class="nav-section" id="navSectionHR">
+      <div class="nav-label">HR</div>
+      <button class="nav-btn" data-tab="hr">Team &amp; HR</button>
     </div>
   </div>
 
@@ -1678,6 +1697,16 @@
 
   <!--  DASHBOARD  -->
   <div class="tab-content active" id="tab-dashboard">
+    <div id="dashboardRestrictedMsg" style="display:none;text-align:center;padding:60px 30px;" class="card">
+      <div style="font-size:34px;margin-bottom:10px;">🔒</div>
+      <div style="font-size:16px;font-weight:800;color:var(--espresso);margin-bottom:8px;">Financial history is restricted</div>
+      <div style="font-size:13px;color:var(--dusty);max-width:420px;margin:0 auto 18px;line-height:1.6;">Your account doesn't have access to the company's finance overview. Head to Sales &amp; Inventory to log a sale, or Team &amp; HR to view your own hours and profile.</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn-primary" style="padding:10px 20px;font-size:12px;" onclick="switchTab('sales')">Go to Sales &amp; Inventory</button>
+        <button class="btn-secondary" style="padding:10px 20px;font-size:12px;" onclick="switchTab('hr')">Go to Team &amp; HR</button>
+      </div>
+    </div>
+    <div id="dashboardFullContent">
     <button onclick="switchTab('financialyear')" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:16px 22px;margin-bottom:18px;border:none;border-radius:16px;cursor:pointer;background:linear-gradient(135deg,var(--berry),#8f4a5c);color:#fff;font-family:'Montserrat',sans-serif;box-shadow:0 6px 18px rgba(177,93,112,.3);">
       <span style="display:flex;align-items:center;gap:10px;">
         <span style="font-size:20px;">📊</span>
@@ -1753,6 +1782,7 @@
       </div>
       <div id="finGoalsGlance" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"></div>
     </div>
+    </div>
   </div>
 
   <!--  INCOME  -->
@@ -1763,7 +1793,7 @@
         <div class="section-header">
           <div class="section-dot"></div>
           <div class="section-title">Income Entries</div>
-          <button class="btn-primary" style="margin-left:auto;padding:8px 16px;font-size:12px;" onclick="openAddModal('income')">+Add Entry</button>
+          <button class="btn-primary fin-edit-only" style="margin-left:auto;padding:8px 16px;font-size:12px;" onclick="openAddModal('income')">+Add Entry</button>
         </div>
 
         <div class="card" style="margin-bottom:20px;">
@@ -1809,7 +1839,7 @@
         <div class="section-header">
           <div class="section-dot" style="background:var(--dusty)"></div>
           <div class="section-title">Expense Entries</div>
-          <button class="btn-primary" style="margin-left:auto;padding:8px 16px;font-size:12px;" onclick="openAddModal('expense')">+Add Entry</button>
+          <button class="btn-primary fin-edit-only" style="margin-left:auto;padding:8px 16px;font-size:12px;" onclick="openAddModal('expense')">+Add Entry</button>
         </div>
 
         <div class="card" style="margin-bottom:20px;">
@@ -1851,7 +1881,7 @@
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
           <div class="card-title" style="margin:0;">Savings Entries</div>
-          <button class="btn-primary" style="padding:8px 16px;font-size:12px;" onclick="openAddModal('savings')">+ Log Savings</button>
+          <button class="btn-primary fin-edit-only" style="padding:8px 16px;font-size:12px;" onclick="openAddModal('savings')">+ Log Savings</button>
         </div>
         <div id="savingsEntriesList" style="max-height:220px;overflow-y:auto;"></div>
       </div>
@@ -1868,7 +1898,7 @@
         <div class="section-header">
           <div class="section-dot"></div>
           <div class="section-title">Short-Term Goals <span style="font-weight:500;opacity:.6;font-size:11px;">(Achieve in 1 year)</span></div>
-          <button class="btn-primary" style="margin-left:auto;padding:8px 16px;font-size:12px;" onclick="openGoalModal('short')">+Add Goal</button>
+          <button class="btn-primary fin-edit-only" style="margin-left:auto;padding:8px 16px;font-size:12px;" onclick="openGoalModal('short')">+Add Goal</button>
         </div>
         <div id="shortTermGoals" style="display:flex;flex-direction:column;gap:14px;"></div>
         <div id="noShortGoals" class="card" style="text-align:center;color:var(--dusty);font-size:13px;padding:30px;">
@@ -1881,7 +1911,7 @@
         <div class="section-header">
           <div class="section-dot" style="background:var(--dusty)"></div>
           <div class="section-title">Long-Term Goals <span style="font-weight:500;opacity:.6;font-size:11px;">(Achieve in 5 years)</span></div>
-          <button class="btn-primary" style="margin-left:auto;padding:8px 16px;font-size:12px;background:linear-gradient(135deg,var(--dusty),#7a6070);" onclick="openGoalModal('long')">+Add Goal</button>
+          <button class="btn-primary fin-edit-only" style="margin-left:auto;padding:8px 16px;font-size:12px;background:linear-gradient(135deg,var(--dusty),#7a6070);" onclick="openGoalModal('long')">+Add Goal</button>
         </div>
         <div id="longTermGoals" style="display:flex;flex-direction:column;gap:14px;"></div>
         <div id="noLongGoals" class="card" style="text-align:center;color:var(--dusty);font-size:13px;padding:30px;">
@@ -1924,7 +1954,7 @@
             <div class="section-dot" style="background:#3d7a48"></div>
             <div class="section-title">Recurring Income</div>
             <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
-              <button class="btn-primary" style="padding:8px 16px;font-size:12px;background:linear-gradient(135deg,#3d7a48,#2d5a36);" onclick="openRecModal('income')">+ Add Income</button>
+              <button class="btn-primary fin-edit-only" style="padding:8px 16px;font-size:12px;background:linear-gradient(135deg,#3d7a48,#2d5a36);" onclick="openRecModal('income')">+ Add Income</button>
             </div>
           </div>
           <div id="recIncomeList">
@@ -1940,7 +1970,7 @@
             <div class="section-title">Debit Orders</div>
             <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
               
-              <button class="btn-primary" style="padding:8px 16px;font-size:12px;" onclick="openRecModal('expense')">+ AddDebit</button>
+              <button class="btn-primary fin-edit-only" style="padding:8px 16px;font-size:12px;" onclick="openRecModal('expense')">+ AddDebit</button>
             </div>
           </div>
 
@@ -1960,7 +1990,7 @@
             <div class="section-title">RecurringSavings</div>
             <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
               
-              <button class="btn-primary" style="padding:8px 16px;font-size:12px;background:linear-gradient(135deg,var(--dusty),#7a6070);" onclick="openRecModal('savings')">+ AddSavings</button>
+              <button class="btn-primary fin-edit-only" style="padding:8px 16px;font-size:12px;background:linear-gradient(135deg,var(--dusty),#7a6070);" onclick="openRecModal('savings')">+ AddSavings</button>
             </div>
           </div>
 
@@ -2014,6 +2044,168 @@
           <div id="monthlyTimeline" style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;"></div>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!--  SALES & INVENTORY  -->
+  <div class="tab-content" id="tab-sales">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px;">
+      <div class="rec-summary-pill">
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dusty);margin-bottom:8px;">My Sales This Month</div>
+        <div style="font-size:26px;font-weight:900;color:var(--berry);" id="mySalesMonthTotal">$0.00</div>
+        <div style="font-size:11px;color:var(--dusty);margin-top:4px;" id="mySalesMonthCount">0 sales</div>
+      </div>
+      <div class="rec-summary-pill">
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dusty);margin-bottom:8px;">My Commission This Month</div>
+        <div style="font-size:26px;font-weight:900;color:#3d7a48;" id="myCommissionMonthTotal">$0.00</div>
+        <div style="font-size:11px;color:var(--dusty);margin-top:4px;">at <span id="myCommissionRate">0</span>% per sale</div>
+      </div>
+      <div class="rec-summary-pill">
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dusty);margin-bottom:8px;">Low Stock Items</div>
+        <div style="font-size:26px;font-weight:900;color:#c0392b;" id="lowStockCount">0</div>
+        <div style="font-size:11px;color:var(--dusty);margin-top:4px;">need restocking</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:22px;">
+      <div style="display:flex;flex-direction:column;gap:22px;">
+
+        <!-- Inventory -->
+        <div>
+          <div class="section-header">
+            <div class="section-dot"></div>
+            <div class="section-title">Inventory</div>
+            <button class="btn-primary inv-edit-only" style="margin-left:auto;padding:8px 16px;font-size:12px;" onclick="openInvModal()">+ Add Item</button>
+          </div>
+          <div class="card">
+            <div id="inventoryList" style="display:flex;flex-direction:column;gap:10px;"></div>
+            <div id="noInventory" class="card" style="display:none;text-align:center;color:var(--dusty);font-size:13px;padding:24px;">No inventory items yet. Add your first product.</div>
+          </div>
+        </div>
+
+        <!-- Sales log -->
+        <div>
+          <div class="section-header">
+            <div class="section-dot" style="background:var(--dusty)"></div>
+            <div class="section-title">Sales Log</div>
+          </div>
+          <div class="card">
+            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+              <thead>
+                <tr style="text-align:left;color:var(--dusty);font-size:10px;text-transform:uppercase;letter-spacing:.5px;">
+                  <th style="padding:6px 8px;">Date</th>
+                  <th style="padding:6px 8px;">Item</th>
+                  <th style="padding:6px 8px;">Qty</th>
+                  <th style="padding:6px 8px;">Revenue</th>
+                  <th style="padding:6px 8px;" class="finance-col">Profit</th>
+                  <th style="padding:6px 8px;">Commission</th>
+                </tr>
+              </thead>
+              <tbody id="salesLogBody"></tbody>
+            </table>
+            <div id="noSales" style="display:none;text-align:center;color:var(--dusty);font-size:13px;padding:24px;">No sales logged yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Log a Sale panel -->
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="card sales-log-only">
+          <div class="card-title" style="margin-bottom:14px;">Log a Sale</div>
+          <label class="form-label">Item</label>
+          <select id="saleItemSelect" class="form-input" style="margin-bottom:10px;" onchange="_updateSalePreview()"></select>
+          <label class="form-label">Quantity Sold</label>
+          <input type="number" id="saleQty" class="form-input" value="1" min="1" style="margin-bottom:10px;" oninput="_updateSalePreview()" />
+          <label class="form-label">Sale Price (per unit)</label>
+          <input type="number" id="saleUnitPrice" class="form-input" style="margin-bottom:14px;" oninput="_updateSalePreview()" />
+          <div style="padding:12px 14px;background:rgba(228,210,215,.4);border-radius:12px;font-size:12px;display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;"><span style="color:var(--dusty);">Total Revenue</span><strong id="salePreviewRevenue">$0.00</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:var(--dusty);">Your Commission (<span id="salePreviewPct">0</span>%)</span><strong id="salePreviewCommission" style="color:#3d7a48;">$0.00</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span style="color:var(--dusty);">Stock Remaining After</span><strong id="salePreviewStock">0</strong></div>
+          </div>
+          <button class="btn-primary" style="width:100%;padding:12px;" onclick="logSale()">Log This Sale</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px;">How it works</div>
+          <p style="font-size:11px;color:var(--dusty);line-height:1.7;">
+            Logging a sale reduces stock automatically, records your commission, and (when enabled) adds the revenue straight into the company's Income ledger. Low-stock items are flagged once they fall to or below their threshold.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--  TEAM & HR  -->
+  <div class="tab-content" id="tab-hr">
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:22px;">
+      <div style="display:flex;flex-direction:column;gap:22px;">
+
+        <!-- My work profile -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px;">My Work Profile</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+            <div>
+              <label class="form-label">Position / Role</label>
+              <input type="text" id="hrPosition" class="form-input" placeholder="e.g. Sales Assistant" oninput="_saveHRSelfDebounced()" />
+            </div>
+            <div>
+              <label class="form-label">Work Arrangement</label>
+              <select id="hrWorkArrangement" class="form-input" onchange="_saveHRSelfDebounced()">
+                <option value="">Select…</option>
+                <option value="Full-time, in-store">Full-time, in-store</option>
+                <option value="Part-time, in-store">Part-time, in-store</option>
+                <option value="Work from home">Work from home</option>
+                <option value="Hybrid">Hybrid</option>
+                <option value="Freelance / Contract">Freelance / Contract</option>
+              </select>
+            </div>
+          </div>
+          <div id="hrSalaryDisplay" style="padding:12px 14px;background:rgba(228,210,215,.4);border-radius:12px;font-size:12px;display:none;">
+            <span style="color:var(--dusty);">My Salary: </span><strong id="hrSalaryValue"></strong>
+          </div>
+        </div>
+
+        <!-- Log hours -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px;">Log Hours Worked</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+            <div>
+              <label class="form-label">Date</label>
+              <input type="date" id="hrLogDate" class="form-input" />
+            </div>
+            <div>
+              <label class="form-label">Hours</label>
+              <input type="number" id="hrLogHours" class="form-input" step="0.25" min="0" />
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+              <button class="btn-primary" style="width:100%;padding:10px;font-size:12px;" onclick="logWorkHours()">+ Log</button>
+            </div>
+          </div>
+          <input type="text" id="hrLogNotes" class="form-input" placeholder="Notes (optional)" style="margin-bottom:14px;" />
+          <div id="myWorkLogList" style="max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+
+        <!-- Team roster (hr_view_all only) -->
+        <div class="hr-view-all-only" id="teamRosterCard" style="display:none;">
+          <div class="section-header">
+            <div class="section-dot"></div>
+            <div class="section-title">Team Roster</div>
+          </div>
+          <div class="card">
+            <div id="teamRosterList" style="display:flex;flex-direction:column;gap:12px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:10px;">About This Section</div>
+          <p style="font-size:11px;color:var(--dusty);line-height:1.7;">
+            Keep your position, work arrangement and hours up to date here. The owner and anyone with HR access can see the team roster and hours; salary figures are only visible to you and to people with permission to view them.
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -2088,6 +2280,8 @@
             <option value="expenses">Expenses</option>
             <option value="savings">Savings</option>
             <option value="recurring">Recurring Tracker</option>
+            <option value="sales">Sales &amp; Inventory</option>
+            <option value="hr">Team &amp; HR</option>
           </select>
           <div style="font-size:10px;color:var(--dusty);margin-top:6px;opacity:.8;">The tab that opens when you log in.</div>
         </div>
@@ -2174,6 +2368,14 @@
 
       <!-- RIGHT COLUMN: Budget Config -->
       <div style="display:flex;flex-direction:column;gap:18px;">
+
+        <!-- Team & Permissions (owner / team_admin only) -->
+        <div class="card" id="teamPermissionsCard" style="display:none;">
+          <div class="card-title" style="margin-bottom:6px;">Team &amp; Permissions</div>
+          <p style="font-size:11px;color:var(--dusty);margin-bottom:14px;line-height:1.6;">Assign a role preset to each team member, then fine-tune exactly which features they can use. Changes take effect immediately.</p>
+          <div id="teamPermissionsList" style="display:flex;flex-direction:column;gap:12px;"></div>
+        </div>
+
         <div class="card">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
             <div class="card-title" style="margin-bottom:0;">Income Budget Lines</div>
@@ -2633,6 +2835,56 @@
     <div style="display:flex;gap:10px;margin-top:20px;">
       <button class="btn-secondary" onclick="closeEditEntryModal()" style="flex:1;">Cancel</button>
       <button class="btn-primary" onclick="saveEditedEntry()" style="flex:2;">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: Inventory Item ══════════ -->
+<div id="invModal" style="display:none;position:fixed;inset:0;background:rgba(79,46,45,.35);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:var(--cream);border-radius:24px;padding:28px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(79,46,45,.2);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h2 id="invModalTitle" style="font-size:17px;font-weight:800;">+ Add Inventory Item</h2>
+      <button onclick="closeInvModal()" style="background:rgba(177,93,112,.1);border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;color:var(--berry);">x</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <label class="form-label">Item Name</label>
+        <input type="text" id="invName" class="form-input" placeholder="e.g. Undated Soft Life Planner (Printed)" />
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label class="form-label">SKU (optional)</label>
+          <input type="text" id="invSku" class="form-input" />
+        </div>
+        <div>
+          <label class="form-label">Category</label>
+          <input type="text" id="invCategory" class="form-input" placeholder="e.g. Planners" />
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label class="form-label">Cost Price</label>
+          <input type="number" id="invCostPrice" class="form-input" min="0" step="0.01" />
+        </div>
+        <div>
+          <label class="form-label">Sale Price</label>
+          <input type="number" id="invSalePrice" class="form-input" min="0" step="0.01" />
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label class="form-label">Quantity In Stock</label>
+          <input type="number" id="invQty" class="form-input" min="0" step="1" />
+        </div>
+        <div>
+          <label class="form-label">Low Stock Alert Below</label>
+          <input type="number" id="invLowStock" class="form-input" min="0" step="1" value="5" />
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn-secondary" onclick="closeInvModal()" style="flex:1;">Cancel</button>
+      <button class="btn-primary" onclick="saveInvItem()" style="flex:2;">Save Item</button>
     </div>
   </div>
 </div>
@@ -3183,7 +3435,36 @@ const state = {
   ],
   modalType: null,
   goalModalType: null,
+
+  // ── Roles, team, inventory, sales, HR ──
+  me: { role: 'pending', permissions: {}, commissionPct: 0, salary: null, position: '', workArrangement: '', email: '', name: '' },
+  team: [],
+  inventory: [],
+  sales: [],
+  workLogs: [],
+  invEditId: null,
+  saleItemId: null,
 };
+
+const PERM_KEYS = ['finance_view','finance_edit','sales_log','inventory_view','inventory_edit','hr_view_all','hr_edit_salary','team_admin'];
+const PERM_LABELS = {
+  finance_view: 'View Finance (income, expenses, savings)',
+  finance_edit: 'Edit Finance (add/edit/delete entries)',
+  sales_log: 'Log Sales',
+  inventory_view: 'View Inventory',
+  inventory_edit: 'Edit Inventory (add/edit stock)',
+  hr_view_all: 'View All Employees (HR roster)',
+  hr_edit_salary: 'Edit Salaries',
+  team_admin: 'Manage Team & Permissions',
+};
+const ROLE_PRESETS = {
+  owner:       { finance_view:true, finance_edit:true, sales_log:true, inventory_view:true, inventory_edit:true, hr_view_all:true, hr_edit_salary:true, team_admin:true },
+  manager:     { finance_view:true, finance_edit:true, sales_log:true, inventory_view:true, inventory_edit:true, hr_view_all:true, hr_edit_salary:false, team_admin:false },
+  salesperson: { finance_view:false, finance_edit:false, sales_log:true, inventory_view:true, inventory_edit:false, hr_view_all:false, hr_edit_salary:false, team_admin:false },
+  hr_staff:    { finance_view:false, finance_edit:false, sales_log:false, inventory_view:false, inventory_edit:false, hr_view_all:true, hr_edit_salary:false, team_admin:false },
+  pending:     { finance_view:false, finance_edit:false, sales_log:false, inventory_view:false, inventory_edit:false, hr_view_all:false, hr_edit_salary:false, team_admin:false },
+};
+function can(perm) { return state.me.role === 'owner' || !!(state.me.permissions && state.me.permissions[perm]); }
 
 // 
 // CHARTS
@@ -3443,6 +3724,15 @@ function renderCalendar() {
 // RENDER: DASHBOARD
 // 
 function renderDashboard() {
+  const restrictedEl = document.getElementById('dashboardRestrictedMsg');
+  const fullEl = document.getElementById('dashboardFullContent');
+  if (!can('finance_view')) {
+    if (restrictedEl) restrictedEl.style.display = '';
+    if (fullEl) fullEl.style.display = 'none';
+    return;
+  }
+  if (restrictedEl) restrictedEl.style.display = 'none';
+  if (fullEl) fullEl.style.display = '';
   const totalInc = getTotalIncome();
   const budgInc  = getBudgetTotal('income');
   const budgExp  = getBudgetTotal('expense');
@@ -3790,6 +4080,7 @@ function renderSettings() {
   _applyFontSize(state.fontSize);
   renderTotalBudget();
   setIncomeModeButtons();
+  renderTeamPanel();
 }
 
 function renderBudgetLines() {
@@ -3828,6 +4119,8 @@ const TAB_TITLES = {
   shopping:   'Shopping List',
   planner:    'Planner',
   settings:   'Profile & Settings',
+  sales:      'Sales & Inventory',
+  hr:         'Team & HR',
 };
 
 function switchTab(tabId) {
@@ -3863,6 +4156,8 @@ function switchTab(tabId) {
   if (tabId === 'financialyear') renderFinancialYear();
   if (tabId === 'summaryreport') renderSummaryReport();
   if (tabId === 'settings')   renderSettings();
+  if (tabId === 'sales')      renderSales();
+  if (tabId === 'hr')         renderHR();
 }
 
 document.querySelectorAll('[data-tab]').forEach(btn => {
@@ -4330,9 +4625,359 @@ function deleteRecItem(type, id) {
   renderRecurring();
 }
 
-// 
+// ══════════════════════════════════════════════════════════════════
+// SALES & INVENTORY
+// ══════════════════════════════════════════════════════════════════
+
+function renderSales() {
+  const invList = document.getElementById('inventoryList');
+  const noInv = document.getElementById('noInventory');
+  invList.innerHTML = '';
+  if (!state.inventory.length) {
+    noInv.style.display = '';
+  } else {
+    noInv.style.display = 'none';
+    state.inventory.forEach(item => {
+      const low = item.qty <= item.lowStock;
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:rgba(228,210,215,.25);';
+      row.innerHTML = `
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:700;color:var(--espresso);">${escapeHtml(item.name)} ${low ? '<span class="low-stock-badge">Low Stock</span>' : ''}</div>
+          <div style="font-size:11px;color:var(--dusty);">${escapeHtml(item.category||'Uncategorised')}${item.sku ? ' · SKU '+escapeHtml(item.sku) : ''} · Cost ${fmt(item.costPrice)} · Sells for ${fmt(item.salePrice)}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:15px;font-weight:900;color:${low?'#c0392b':'var(--espresso)'};">${item.qty}</div>
+          <div style="font-size:10px;color:var(--dusty);">in stock</div>
+        </div>
+        <div class="inv-edit-only" style="display:flex;gap:6px;">
+          <button class="btn-icon" onclick="openInvModal(${item.id})" title="Edit">✎</button>
+          <button class="btn-icon delete" onclick="deleteInvItem(${item.id})" title="Delete">×</button>
+        </div>`;
+      invList.appendChild(row);
+    });
+  }
+  document.getElementById('lowStockCount').textContent = state.inventory.filter(i => i.qty <= i.lowStock).length;
+
+  // Sale item select + preview
+  const sel = document.getElementById('saleItemSelect');
+  const prevVal = sel.value;
+  sel.innerHTML = state.inventory.map(i => `<option value="${i.id}">${escapeHtml(i.name)} (${i.qty} in stock)</option>`).join('');
+  if (prevVal && state.inventory.some(i => String(i.id) === prevVal)) sel.value = prevVal;
+  if (sel.value && !document.getElementById('saleUnitPrice').value) {
+    const it = state.inventory.find(i => String(i.id) === sel.value);
+    if (it) document.getElementById('saleUnitPrice').value = it.salePrice;
+  }
+  _updateSalePreview();
+
+  // Sales log table
+  const tbody = document.getElementById('salesLogBody');
+  const noSales = document.getElementById('noSales');
+  if (!state.sales.length) {
+    tbody.innerHTML = ''; noSales.style.display = '';
+  } else {
+    noSales.style.display = 'none';
+    tbody.innerHTML = state.sales.map(s => `
+      <tr style="border-top:1px solid rgba(177,93,112,.08);">
+        <td style="padding:7px 8px;">${s.date}</td>
+        <td style="padding:7px 8px;">${escapeHtml(s.itemName)}</td>
+        <td style="padding:7px 8px;">${s.qty}</td>
+        <td style="padding:7px 8px;font-weight:700;">${fmt(s.totalRevenue)}</td>
+        <td style="padding:7px 8px;" class="finance-col">${fmt(s.profit)}</td>
+        <td style="padding:7px 8px;color:#3d7a48;">${fmt(s.commissionAmount)}</td>
+      </tr>`).join('');
+  }
+
+  // My sales this month
+  const now = new Date();
+  const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const mySales = state.sales.filter(s => s.soldBy === currentUser?.id && s.date && s.date.startsWith(ym));
+  document.getElementById('mySalesMonthTotal').textContent = fmt(mySales.reduce((s,x)=>s+x.totalRevenue,0));
+  document.getElementById('mySalesMonthCount').textContent = `${mySales.length} sale${mySales.length===1?'':'s'}`;
+  document.getElementById('myCommissionMonthTotal').textContent = fmt(mySales.reduce((s,x)=>s+x.commissionAmount,0));
+  document.getElementById('myCommissionRate').textContent = state.me.commissionPct;
+}
+
+function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str ?? ''; return d.innerHTML; }
+
+function openInvModal(id) {
+  state.invEditId = id || null;
+  document.getElementById('invModalTitle').textContent = id ? 'Edit Inventory Item' : '+ Add Inventory Item';
+  const item = id ? state.inventory.find(i => i.id === id) : null;
+  document.getElementById('invName').value = item ? item.name : '';
+  document.getElementById('invSku').value = item ? item.sku : '';
+  document.getElementById('invCategory').value = item ? item.category : '';
+  document.getElementById('invCostPrice').value = item ? item.costPrice : '';
+  document.getElementById('invSalePrice').value = item ? item.salePrice : '';
+  document.getElementById('invQty').value = item ? item.qty : 0;
+  document.getElementById('invLowStock').value = item ? item.lowStock : 5;
+  document.getElementById('invModal').style.display = 'flex';
+}
+function closeInvModal() { document.getElementById('invModal').style.display = 'none'; }
+
+async function saveInvItem() {
+  const name = document.getElementById('invName').value.trim();
+  if (!name) { showToast('Please enter an item name', 'error'); return; }
+  const payload = {
+    name,
+    sku: document.getElementById('invSku').value.trim(),
+    category: document.getElementById('invCategory').value.trim(),
+    cost_price: parseFloat(document.getElementById('invCostPrice').value) || 0,
+    sale_price: parseFloat(document.getElementById('invSalePrice').value) || 0,
+    quantity: parseInt(document.getElementById('invQty').value) || 0,
+    low_stock_threshold: parseInt(document.getElementById('invLowStock').value) || 5,
+  };
+  try {
+    if (state.invEditId) {
+      const { error } = await sb.from('inventory_items').update(payload).eq('id', state.invEditId);
+      if (error) throw error;
+    } else {
+      const { error } = await sb.from('inventory_items').insert({ ...payload, created_by: currentUser.id });
+      if (error) throw error;
+    }
+    closeInvModal();
+    await loadAllData();
+    renderSales();
+    showToast('Inventory item saved', 'success');
+  } catch (err) { showToast(err.message || 'Could not save item', 'error'); }
+}
+
+async function deleteInvItem(id) {
+  if (!confirm('Delete this inventory item? This cannot be undone.')) return;
+  try {
+    const { error } = await sb.from('inventory_items').delete().eq('id', id);
+    if (error) throw error;
+    await loadAllData();
+    renderSales();
+    showToast('Item deleted', 'success');
+  } catch (err) { showToast(err.message || 'Could not delete item', 'error'); }
+}
+
+function _updateSalePreview() {
+  const sel = document.getElementById('saleItemSelect');
+  const item = state.inventory.find(i => String(i.id) === sel.value);
+  const qty = parseInt(document.getElementById('saleQty').value) || 0;
+  const unitPrice = parseFloat(document.getElementById('saleUnitPrice').value) || 0;
+  const revenue = qty * unitPrice;
+  const commissionPct = state.me.commissionPct || 0;
+  const commission = revenue * (commissionPct / 100);
+  document.getElementById('salePreviewRevenue').textContent = fmt(revenue);
+  document.getElementById('salePreviewPct').textContent = commissionPct;
+  document.getElementById('salePreviewCommission').textContent = fmt(commission);
+  document.getElementById('salePreviewStock').textContent = item ? Math.max(0, item.qty - qty) : 0;
+}
+
+async function logSale() {
+  const sel = document.getElementById('saleItemSelect');
+  const item = state.inventory.find(i => String(i.id) === sel.value);
+  if (!item) { showToast('Add an inventory item first', 'error'); return; }
+  const qty = parseInt(document.getElementById('saleQty').value) || 0;
+  const unitPrice = parseFloat(document.getElementById('saleUnitPrice').value) || 0;
+  if (qty <= 0) { showToast('Enter a quantity greater than 0', 'error'); return; }
+  if (qty > item.qty) { showToast(`Only ${item.qty} in stock`, 'error'); return; }
+  const revenue = qty * unitPrice;
+  const profit = revenue - (qty * item.costPrice);
+  const commissionPct = state.me.commissionPct || 0;
+  const commissionAmount = revenue * (commissionPct / 100);
+  try {
+    // Auto-feed into Finance Income
+    let linkedEntryId = null;
+    const { data: entryData, error: entryErr } = await sb.from('entries').insert({
+      user_id: currentUser.id, type: 'income', amount: revenue,
+      category: 'Sales / Revenue', notes: `Sale: ${item.name} x${qty}`, entry_date: new Date().toISOString().slice(0,10),
+    }).select().single();
+    if (!entryErr && entryData) linkedEntryId = entryData.id;
+
+    const { error: saleErr } = await sb.from('sales').insert({
+      item_id: item.id, item_name: item.name, quantity: qty, sale_price: unitPrice,
+      cost_price: item.costPrice, total_revenue: revenue, profit,
+      commission_pct: commissionPct, commission_amount: commissionAmount,
+      sold_by: currentUser.id, linked_entry_id: linkedEntryId,
+    });
+    if (saleErr) throw saleErr;
+
+    const { error: invErr } = await sb.from('inventory_items').update({ quantity: item.qty - qty }).eq('id', item.id);
+    if (invErr) throw invErr;
+
+    document.getElementById('saleQty').value = 1;
+    await loadAllData();
+    renderSales();
+    showToast(`Sale logged — ${fmt(revenue)} recorded`, 'success');
+  } catch (err) { showToast(err.message || 'Could not log sale', 'error'); }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// HR / TEAM
+// ══════════════════════════════════════════════════════════════════
+
+function renderHR() {
+  document.getElementById('hrPosition').value = state.me.position || '';
+  document.getElementById('hrWorkArrangement').value = state.me.workArrangement || '';
+  const salaryBox = document.getElementById('hrSalaryDisplay');
+  if (state.me.salary !== null && state.me.salary !== undefined) {
+    salaryBox.style.display = '';
+    document.getElementById('hrSalaryValue').textContent = fmt(state.me.salary);
+  } else {
+    salaryBox.style.display = 'none';
+  }
+  if (!document.getElementById('hrLogDate').value) document.getElementById('hrLogDate').value = new Date().toISOString().slice(0,10);
+
+  const myLogs = state.workLogs.filter(w => w.userId === currentUser?.id);
+  const list = document.getElementById('myWorkLogList');
+  list.innerHTML = myLogs.length ? myLogs.map(w => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(228,210,215,.25);border-radius:10px;font-size:12px;">
+      <div><strong>${w.date}</strong>${w.notes ? ' — '+escapeHtml(w.notes) : ''}</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-weight:700;">${w.hours}h</span>
+        <button class="btn-icon delete" onclick="deleteWorkLog(${w.id})" title="Delete">×</button>
+      </div>
+    </div>`).join('') : `<div style="text-align:center;color:var(--dusty);font-size:12px;padding:14px;">No hours logged yet.</div>`;
+
+  if (can('hr_view_all')) {
+    const roster = document.getElementById('teamRosterList');
+    roster.innerHTML = state.team.map(p => {
+      const hours = state.workLogs.filter(w => w.userId === p.id).reduce((s,w) => s + w.hours, 0);
+      const canEditSalary = can('hr_edit_salary');
+      return `
+      <div class="team-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+          <div>
+            <div style="font-weight:800;font-size:13px;color:var(--espresso);">${escapeHtml(p.name || p.email)} <span class="perm-badge">${p.role}</span></div>
+            <div style="font-size:11px;color:var(--dusty);margin-top:2px;">${escapeHtml(p.email)}</div>
+            <div style="font-size:11px;color:var(--dusty);margin-top:4px;">${escapeHtml(p.position||'No position set')} · ${escapeHtml(p.workArrangement||'No arrangement set')}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px;color:var(--dusty);">Total hours logged</div>
+            <div style="font-size:16px;font-weight:900;color:var(--espresso);">${hours}h</div>
+          </div>
+        </div>
+        ${canEditSalary ? `
+        <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
+          <label class="form-label" style="margin:0;">Salary</label>
+          <input type="number" class="form-input" style="flex:1;" value="${p.salary ?? ''}" placeholder="Not set" onchange="updateTeamMemberField('${p.id}','salary',this.value)" />
+        </div>` : (p.salary !== null ? `<div style="margin-top:8px;font-size:11px;color:var(--dusty);">Salary: ${fmt(p.salary)}</div>` : '')}
+      </div>`;
+    }).join('') || `<div style="text-align:center;color:var(--dusty);font-size:12px;padding:14px;">No team members yet.</div>`;
+  }
+}
+
+let _hrSelfTimer = null;
+function _saveHRSelfDebounced() {
+  clearTimeout(_hrSelfTimer);
+  _hrSelfTimer = setTimeout(saveHRSelf, 600);
+}
+async function saveHRSelf() {
+  const position = document.getElementById('hrPosition').value.trim();
+  const workArrangement = document.getElementById('hrWorkArrangement').value;
+  try {
+    const { error } = await sb.from('profiles').update({ position, work_arrangement: workArrangement }).eq('id', currentUser.id);
+    if (error) throw error;
+    state.me.position = position; state.me.workArrangement = workArrangement;
+    showToast('Work profile updated', 'success');
+  } catch (err) { showToast(err.message || 'Could not save', 'error'); }
+}
+
+async function logWorkHours() {
+  const log_date = document.getElementById('hrLogDate').value;
+  const hours = parseFloat(document.getElementById('hrLogHours').value);
+  const notes = document.getElementById('hrLogNotes').value.trim();
+  if (!log_date || !hours || hours <= 0) { showToast('Enter a date and hours worked', 'error'); return; }
+  try {
+    const { error } = await sb.from('work_logs').insert({ user_id: currentUser.id, log_date, hours, notes });
+    if (error) throw error;
+    document.getElementById('hrLogHours').value = '';
+    document.getElementById('hrLogNotes').value = '';
+    await loadAllData();
+    renderHR();
+    showToast('Hours logged', 'success');
+  } catch (err) { showToast(err.message || 'Could not log hours', 'error'); }
+}
+
+async function deleteWorkLog(id) {
+  try {
+    const { error } = await sb.from('work_logs').delete().eq('id', id);
+    if (error) throw error;
+    await loadAllData();
+    renderHR();
+  } catch (err) { showToast(err.message || 'Could not delete', 'error'); }
+}
+
+async function updateTeamMemberField(userId, field, value) {
+  const payload = {};
+  payload[field] = value === '' ? null : parseFloat(value);
+  try {
+    const { error } = await sb.from('profiles').update(payload).eq('id', userId);
+    if (error) throw error;
+    await loadAllData();
+    renderHR();
+    showToast('Saved', 'success');
+  } catch (err) { showToast(err.message || 'Could not save (owner/team admin only)', 'error'); }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TEAM & PERMISSIONS PANEL (Settings, owner / team_admin only)
+// ══════════════════════════════════════════════════════════════════
+
+function renderTeamPanel() {
+  const card = document.getElementById('teamPermissionsCard');
+  if (!card) return;
+  card.style.display = can('team_admin') ? '' : 'none';
+  if (!can('team_admin')) return;
+  const list = document.getElementById('teamPermissionsList');
+  list.innerHTML = state.team.map(p => {
+    const isSelf = p.id === currentUser?.id;
+    return `
+    <div class="team-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+        <div>
+          <div style="font-weight:800;font-size:13px;color:var(--espresso);">${escapeHtml(p.name || p.email)}${isSelf ? ' <span class="perm-badge">You</span>' : ''}</div>
+          <div style="font-size:11px;color:var(--dusty);">${escapeHtml(p.email)}</div>
+        </div>
+        <select class="form-input" style="width:auto;font-size:12px;" ${isSelf ? 'disabled title="You cannot change your own role here"' : ''} onchange="applyRolePreset('${p.id}', this.value)">
+          ${Object.keys(ROLE_PRESETS).map(r => `<option value="${r}" ${p.role===r?'selected':''}>${r.charAt(0).toUpperCase()+r.slice(1).replace('_',' ')}</option>`).join('')}
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin-bottom:10px;">
+        ${PERM_KEYS.map(key => `
+        <label class="toggle-row" style="cursor:${isSelf?'default':'pointer'};">
+          <span>${PERM_LABELS[key]}</span>
+          <input type="checkbox" ${p.permissions?.[key] ? 'checked' : ''} ${isSelf ? 'disabled' : ''} onchange="toggleTeamPermission('${p.id}','${key}',this.checked)" />
+        </label>`).join('')}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label class="form-label" style="margin:0;white-space:nowrap;">Commission %</label>
+        <input type="number" class="form-input" style="flex:1;" value="${p.commissionPct||0}" min="0" max="100" step="0.5" onchange="updateTeamMemberField('${p.id}','commission_pct',this.value)" />
+      </div>
+    </div>`;
+  }).join('') || `<div style="text-align:center;color:var(--dusty);font-size:12px;padding:14px;">No team members yet — invite people to sign up, then activate their role here.</div>`;
+}
+
+async function applyRolePreset(userId, role) {
+  const preset = ROLE_PRESETS[role] || {};
+  try {
+    const { error } = await sb.from('profiles').update({ role, permissions: preset }).eq('id', userId);
+    if (error) throw error;
+    await loadAllData();
+    renderTeamPanel();
+    showToast('Role updated', 'success');
+  } catch (err) { showToast(err.message || 'Could not update role (owner/team admin only)', 'error'); }
+}
+
+async function toggleTeamPermission(userId, key, checked) {
+  const member = state.team.find(p => p.id === userId);
+  if (!member) return;
+  const permissions = { ...(member.permissions||{}), [key]: checked };
+  try {
+    const { error } = await sb.from('profiles').update({ permissions }).eq('id', userId);
+    if (error) throw error;
+    member.permissions = permissions;
+    showToast('Permission updated', 'success');
+  } catch (err) { showToast(err.message || 'Could not update (owner/team admin only)', 'error'); }
+}
+
+//
 // SHOPPING LIST
-// 
+//
 
 const FREQ_LABELS = { monthly: 'Monthly',  weekly: 'Weekly', quarterly: 'Quarterly' };
 const FREQ_RESETS = { monthly: 'Reset Month',  weekly: 'Reset Week', quarterly: 'Reset Quarter' };
@@ -7655,7 +8300,10 @@ function initApp() {
   renderCalendar();
   let _resumeTab = null;
   try { _resumeTab = sessionStorage.getItem('_lastTab'); } catch(e) {}
-  switchTab(_resumeTab || state.landingPage || 'dashboard');
+  const financeTabs = ['income','expenses','savings','recurring'];
+  let target = _resumeTab || state.landingPage || 'dashboard';
+  if (financeTabs.includes(target) && !can('finance_view')) target = 'dashboard';
+  switchTab(target);
   syncCurrencySymbols();
 }
 
@@ -7752,6 +8400,10 @@ function showToast(msg, type) {
 function _dbEntry(e)  { return { id: e.id, amount: parseFloat(e.amount), cat: e.category, desc: e.notes, date: e.entry_date }; }
 function _dbGoal(g)   { return { id: g.id, name: g.name, target: parseFloat(g.target), current: parseFloat(g.saved), icon: g.icon||'' }; }
 function _dbRec(r)    { const ic=r.icon||''; const isAnn=ic.startsWith('annual'); const mm=ic.match(/m:(\d+)/); return { id: r.id, name: r.name, amount: parseFloat(r.amount), day: r.day_of_month, category: r.category, icon:'', color: r.color||'#B15D70', freq: r._freq || (isAnn?'annual':'monthly'), month: r._month || (mm?parseInt(mm[1]):null) }; }
+function _dbInv(i)    { return { id: i.id, name: i.name, sku: i.sku||'', costPrice: parseFloat(i.cost_price)||0, salePrice: parseFloat(i.sale_price)||0, qty: i.quantity||0, lowStock: i.low_stock_threshold ?? 5, category: i.category||'' }; }
+function _dbSale(s)   { return { id: s.id, itemId: s.item_id, itemName: s.item_name, qty: s.quantity, salePrice: parseFloat(s.sale_price)||0, costPrice: parseFloat(s.cost_price)||0, totalRevenue: parseFloat(s.total_revenue)||0, profit: parseFloat(s.profit)||0, commissionPct: parseFloat(s.commission_pct)||0, commissionAmount: parseFloat(s.commission_amount)||0, soldBy: s.sold_by, date: s.sale_date }; }
+function _dbProfile(p){ return { id: p.id, name: p.name||'', email: p.email||'', role: p.role||'pending', permissions: p.permissions||{}, commissionPct: parseFloat(p.commission_pct)||0, salary: p.salary===null||p.salary===undefined?null:parseFloat(p.salary), position: p.position||'', workArrangement: p.work_arrangement||'' }; }
+function _dbWorkLog(w){ return { id: w.id, userId: w.user_id, date: w.log_date, hours: parseFloat(w.hours)||0, notes: w.notes||'' }; }
 
 // ── Load all data ─────────────────────────────────────────────────
 async function loadAllData() {
@@ -7796,11 +8448,36 @@ async function loadAllData() {
           Object.entries(r.gym).forEach(([d, g]) => { state.routines.gym[d] = { ...state.routines.gym[d], ...g }; });
         }
       }
+
+      // Role / permissions / HR self-fields
+      state.me.role          = prof.role || 'pending';
+      state.me.permissions   = prof.permissions || {};
+      state.me.commissionPct = parseFloat(prof.commission_pct) || 0;
+      state.me.salary        = prof.salary === null || prof.salary === undefined ? null : parseFloat(prof.salary);
+      state.me.position      = prof.position || '';
+      state.me.workArrangement = prof.work_arrangement || '';
+      state.me.email         = prof.email || currentUser.email;
+      state.me.name          = prof.name || '';
     }
 
     if (entRes.data)  { state.entries.income = entRes.data.filter(e=>e.type==='income').map(_dbEntry); state.entries.expense = entRes.data.filter(e=>e.type==='expense').map(_dbEntry); }
     if (goalRes.data) { state.goals.short = goalRes.data.filter(g=>g.type==='short').map(_dbGoal); state.goals.long = goalRes.data.filter(g=>g.type==='long').map(_dbGoal); }
     if (recRes.data)  { state.recurring.expense = recRes.data.filter(r=>r.type==='expense').map(_dbRec); state.recurring.savings = recRes.data.filter(r=>r.type==='savings').map(_dbRec); state.recurring.income = recRes.data.filter(r=>r.type==='income').map(_dbRec); }
+
+    // Second wave: RLS naturally scopes each of these to what this user is allowed to see
+    // (own rows only, or the whole company, depending on their permissions).
+    try {
+      const [invRes, salesRes, teamRes, wlRes] = await Promise.all([
+        sb.from('inventory_items').select('*').order('name'),
+        sb.from('sales').select('*').order('sale_date', { ascending: false }),
+        sb.from('profiles').select('*').order('email'),
+        sb.from('work_logs').select('*').order('log_date', { ascending: false }),
+      ]);
+      state.inventory = invRes.data ? invRes.data.map(_dbInv) : [];
+      state.sales     = salesRes.data ? salesRes.data.map(_dbSale) : [];
+      state.team      = teamRes.data ? teamRes.data.map(_dbProfile) : [];
+      state.workLogs  = wlRes.data ? wlRes.data.map(_dbWorkLog) : [];
+    } catch (e2) { console.error('loadAllData (team/sales/inventory) error:', e2); }
 
     // Apply theme
     document.body.className = state.activeTheme && state.activeTheme!=='default' ? 'authenticated theme-'+state.activeTheme : 'authenticated';
@@ -7824,6 +8501,8 @@ async function handleLogout() {
   state.goals   = { short: [], long: [] };
   state.recurring = { expense: [], savings: [], income: [] };
   state.profile = { name: '', occupation: '', avatar: '' };
+  state.me = { role: 'pending', permissions: {}, commissionPct: 0, salary: null, position: '', workArrangement: '', email: '', name: '' };
+  state.team = []; state.inventory = []; state.sales = []; state.workLogs = [];
 }
 
 // ── Override: saveEntry ───────────────────────────────────────────
@@ -8176,7 +8855,28 @@ function _enterApp() {
   updateHeaderProfile();
   _applyFontSize(state.fontSize);
   _applyDarkMode(state.darkMode);
+  applyPermissionGating();
   autoPopulateRecurring().then(initApp);
+}
+
+// ── Permission gating: hide/lock nav sections and edit controls based on state.me ──
+function applyPermissionGating() {
+  const financeSection = document.getElementById('navSectionFinance');
+  if (financeSection) financeSection.style.display = can('finance_view') ? '' : 'none';
+
+  const salesSection = document.getElementById('navSectionSales');
+  if (salesSection) salesSection.style.display = (can('sales_log') || can('inventory_view') || can('inventory_edit')) ? '' : 'none';
+
+  document.body.classList.toggle('no-finance-edit', !can('finance_edit'));
+  document.body.classList.toggle('no-inventory-edit', !can('inventory_edit'));
+  document.body.classList.toggle('no-sales-log', !can('sales_log'));
+  document.body.classList.toggle('no-finance-view', !can('finance_view'));
+
+  const teamPanel = document.getElementById('teamPermissionsCard');
+  if (teamPanel) teamPanel.style.display = can('team_admin') ? '' : 'none';
+
+  const teamRoster = document.getElementById('teamRosterCard');
+  if (teamRoster) teamRoster.style.display = can('hr_view_all') ? '' : 'none';
 }
 
 // ── Initial session check ─────────────────────────────────────────
