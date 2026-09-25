@@ -1641,9 +1641,14 @@
   </div>
 
   <div class="nav-sections">
+    <div class="nav-section" id="navSectionOverview">
+      <div class="nav-label">Overview</div>
+      <button class="nav-btn active" data-tab="dashboard" id="navOverviewFinance">Finance</button>
+      <button class="nav-btn" data-tab="salesdash" id="navOverviewSales" style="display:none;">Sales</button>
+      <button class="nav-btn" data-tab="hrdash" id="navOverviewHR">HR</button>
+    </div>
     <div class="nav-section" id="navSectionFinance">
       <div class="nav-label">Finance</div>
-      <button class="nav-btn active" data-tab="dashboard">Dashboard</button>
       <button class="nav-btn" data-tab="income">Income</button>
       <button class="nav-btn" data-tab="expenses">Expenses</button>
       <button class="nav-btn" data-tab="savings">Savings</button>
@@ -1651,14 +1656,12 @@
     </div>
     <div class="nav-section" id="navSectionSales" style="display:none;">
       <div class="nav-label">Sales &amp; Inventory</div>
-      <button class="nav-btn" data-tab="salesdash">Dashboard</button>
       <button class="nav-btn" data-tab="categories">Categories</button>
       <button class="nav-btn" data-tab="inventory">Inventory</button>
       <button class="nav-btn" data-tab="orders">Orders</button>
     </div>
     <div class="nav-section" id="navSectionHR">
       <div class="nav-label">HR</div>
-      <button class="nav-btn" data-tab="hrdash">Dashboard</button>
       <button class="nav-btn" data-tab="hr">My Profile &amp; Hours</button>
     </div>
   </div>
@@ -1709,16 +1712,11 @@
       </div>
     </div>
     <div id="dashboardFullContent">
-    <button onclick="switchTab('financialyear')" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:16px 22px;margin-bottom:18px;border:none;border-radius:16px;cursor:pointer;background:linear-gradient(135deg,var(--berry),#8f4a5c);color:#fff;font-family:'Montserrat',sans-serif;box-shadow:0 6px 18px rgba(177,93,112,.3);">
-      <span style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:20px;">📊</span>
-        <span style="text-align:left;">
-          <span style="display:block;font-size:14px;font-weight:800;">Financial Year Summary</span>
-          <span style="display:block;font-size:11px;opacity:.85;font-weight:500;">Full-year digest, charts, and a downloadable report</span>
-        </span>
-      </span>
-      <span style="font-size:18px;font-weight:800;">→</span>
-    </button>
+    <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:18px;">
+      <button onclick="shiftActiveMonth(-1)" class="btn-icon" title="Previous month">‹</button>
+      <div class="month-switcher-label" style="font-size:15px;font-weight:800;color:var(--espresso);min-width:150px;text-align:center;">Month Year</div>
+      <button onclick="shiftActiveMonth(1)" class="btn-icon" title="Next month">›</button>
+    </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;" id="metricRow">
 
       <div class="metric-card" style="--accent-color:#B15D70">
@@ -1789,6 +1787,11 @@
 
   <!--  INCOME  -->
   <div class="tab-content" id="tab-income">
+    <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:18px;">
+      <button onclick="shiftActiveMonth(-1)" class="btn-icon" title="Previous month">‹</button>
+      <div class="month-switcher-label" style="font-size:15px;font-weight:800;color:var(--espresso);min-width:150px;text-align:center;">Month Year</div>
+      <button onclick="shiftActiveMonth(1)" class="btn-icon" title="Next month">›</button>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 340px;gap:22px;">
 
       <div>
@@ -1835,6 +1838,11 @@
 
   <!--  EXPENSES  -->
   <div class="tab-content" id="tab-expenses">
+    <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:18px;">
+      <button onclick="shiftActiveMonth(-1)" class="btn-icon" title="Previous month">‹</button>
+      <div class="month-switcher-label" style="font-size:15px;font-weight:800;color:var(--espresso);min-width:150px;text-align:center;">Month Year</div>
+      <button onclick="shiftActiveMonth(1)" class="btn-icon" title="Next month">›</button>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 340px;gap:22px;">
 
       <div>
@@ -1878,6 +1886,11 @@
 
   <!--  SAVINGS  -->
   <div class="tab-content" id="tab-savings">
+    <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:18px;">
+      <button onclick="shiftActiveMonth(-1)" class="btn-icon" title="Previous month">‹</button>
+      <div class="month-switcher-label" style="font-size:15px;font-weight:800;color:var(--espresso);min-width:150px;text-align:center;">Month Year</div>
+      <button onclick="shiftActiveMonth(1)" class="btn-icon" title="Next month">›</button>
+    </div>
     <!-- Log a savings entry + pie chart -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px;">
       <div class="card">
@@ -3373,6 +3386,7 @@ const MONTHS = ['January','February','March','April','May','June',
 const state = {
   profile: { name: 'Scribble Student', occupation: 'Student & Freelancer', avatar: '' },
   activeMonth: new Date().getMonth(),
+  activeYear: new Date().getFullYear(),
   budgetLines: {
     income: [
       { id: 1, name: 'Freelance Work', limit: 2000 },
@@ -3644,7 +3658,7 @@ function buildCashFlowChart() {
 
 function buildIncomeChart() {
   const ctx = document.getElementById('incomeChart').getContext('2d');
-  const cats = getTopCats(state.entries.income, 5);
+  const cats = getTopCats(monthEntries('income'), 5);
   if (incomeChartInst) incomeChartInst.destroy();
   incomeChartInst = new Chart(ctx, {
     type: 'bar',
@@ -3679,7 +3693,7 @@ function buildIncomeChart() {
 
 function buildExpenseChart() {
   const ctx = document.getElementById('expenseChart').getContext('2d');
-  const cats = getTopCats(state.entries.expense, 5);
+  const cats = getTopCats(monthEntries('expense'), 5);
   if (expenseChartInst) expenseChartInst.destroy();
   expenseChartInst = new Chart(ctx, {
     type: 'bar',
@@ -3720,12 +3734,20 @@ function fmt(n) {
   return sym + Number(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
 }
 
+// ── Active-month filtering (Dashboard/Income/Expenses/Savings all scope to state.activeMonth/activeYear) ──
+function _pad2(n) { return String(n).padStart(2, '0'); }
+function activeMonthPrefix() { return `${state.activeYear}-${_pad2(state.activeMonth + 1)}`; }
+function monthEntries(type) {
+  const prefix = activeMonthPrefix();
+  return state.entries[type].filter(e => (e.date || '').startsWith(prefix));
+}
+
 function getTotalIncome() {
-  return state.entries.income.reduce((s,e) => s + Number(e.amount), 0);
+  return monthEntries('income').reduce((s,e) => s + Number(e.amount), 0);
 }
 
 function getTotalExpense() {
-  return state.entries.expense.reduce((s,e) => s + Number(e.amount), 0);
+  return monthEntries('expense').reduce((s,e) => s + Number(e.amount), 0);
 }
 
 function getBudgetTotal(type) {
@@ -3849,9 +3871,9 @@ function renderDashboard() {
   const budgSav  = getBudgetTotal('savings');
   // Actual savings = entries whose category matches a savings budget line (incl. auto-logged recurring savings)
   const _savCats = new Set((state.budgetLines.savings||[]).map(l=>l.name).concat(['Savings']));
-  const actualSav = state.entries.expense.filter(e=>_savCats.has(e.cat)).reduce((s,e)=>s+Number(e.amount),0);
+  const actualSav = monthEntries('expense').filter(e=>_savCats.has(e.cat)).reduce((s,e)=>s+Number(e.amount),0);
   // Expenses exclude savings transfers so they aren't double counted
-  const totalExp = state.entries.expense.filter(e=>!_savCats.has(e.cat)).reduce((s,e)=>s+Number(e.amount),0);
+  const totalExp = monthEntries('expense').filter(e=>!_savCats.has(e.cat)).reduce((s,e)=>s+Number(e.amount),0);
   const netSav   = actualSav;
 
   // Income metric
@@ -3901,8 +3923,8 @@ function renderDashboard() {
 
   //System Summary
   const expPct = budgExp > 0 ? Math.round((totalExp/budgExp)*100) : 0;
-  const topCatInc = getTopCats(state.entries.income, 1)[0];
-  const topCatExp = getTopCats(state.entries.expense, 1)[0];
+  const topCatInc = getTopCats(monthEntries('income'), 1)[0];
+  const topCatExp = getTopCats(monthEntries('expense'), 1)[0];
   let summary = `You've earned <strong>${fmt(totalInc)}</strong> this month`;
   if (budgInc > 0) summary += ` (${Math.round((totalInc/budgInc)*100)}% of your income budget)`;
   summary += `. Expenses stand at <strong>${fmt(totalExp)}</strong> — `;
@@ -3924,10 +3946,11 @@ function renderIncome() {
   // Entries list
   const list = document.getElementById('incomeList');
   list.innerHTML = '';
-  if (!state.entries.income.length) {
-    list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--dusty);font-size:13px;">No income entries yet.</div>`;
+  const _incMonth = monthEntries('income');
+  if (!_incMonth.length) {
+    list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--dusty);font-size:13px;">No income entries for ${MONTHS[state.activeMonth]} ${state.activeYear} yet.</div>`;
   } else {
-    state.entries.income.slice().reverse().forEach(e => {
+    _incMonth.slice().reverse().forEach(e => {
       list.innerHTML += entryRow(e, 'income');
     });
   }
@@ -3938,7 +3961,7 @@ function renderIncome() {
   const _totExp = getTotalExpense();
   const _expPctOfInc = _totInc > 0 ? Math.round((_totExp / _totInc) * 100) : 0;
   const _savedPct = _totInc > 0 ? Math.round((Math.max(0,_totInc - _totExp) / _totInc) * 100) : 0;
-  const top = getTopCats(state.entries.income, 1)[0];
+  const top = getTopCats(monthEntries('income'), 1)[0];
   if (top) {
     const _topPct = _totInc > 0 ? Math.round((top.total / _totInc) * 100) : 0;
     const _incBudget = (state.budgetLines.income||[]).reduce((s,l)=>s+(parseFloat(l.limit)||0),0);
@@ -3951,7 +3974,7 @@ function renderIncome() {
       `<strong>${top.name}</strong> drives <strong>${_topPct}%</strong> of your income (${fmt(top.total)}). ` +
       (_vsBudget !== null ? `You have received <strong>${_vsBudget}%</strong> of your budgeted income this month. ` : '') +
       `Expenses consume <strong>${_expPctOfInc}%</strong>, leaving a <strong>${_savedPct}%</strong> savings rate. ${_healthMsg}`;
-    const top3 = getTopEntries(state.entries.income, top.name, 3);
+    const top3 = getTopEntries(_incMonth, top.name, 3);
     document.getElementById('incomeIntelList').innerHTML =
       top3.map(t => `<div class="intel-item"><span class="intel-item-name">${t.desc}</span><span class="intel-item-amt">${fmt(t.amount)}</span></div>`).join('');
   } else {
@@ -3960,7 +3983,7 @@ function renderIncome() {
   }
 
   // Category breakdown
-  const cats = getTopCats(state.entries.income, 8);
+  const cats = getTopCats(monthEntries('income'), 8);
   const maxVal = cats[0]?.total || 1;
   document.getElementById('incomeCatBreakdown').innerHTML = cats.map(c => ` <div>
       <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;">
@@ -3980,10 +4003,11 @@ function renderExpenses() {
 
   const list = document.getElementById('expenseList');
   list.innerHTML = '';
-  if (!state.entries.expense.length) {
-    list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--dusty);font-size:13px;">No expense entries yet.</div>`;
+  const _expMonth = monthEntries('expense');
+  if (!_expMonth.length) {
+    list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--dusty);font-size:13px;">No expense entries for ${MONTHS[state.activeMonth]} ${state.activeYear} yet.</div>`;
   } else {
-    state.entries.expense.slice().reverse().forEach(e => {
+    _expMonth.slice().reverse().forEach(e => {
       list.innerHTML += entryRow(e, 'expense');
     });
   }
@@ -3992,13 +4016,17 @@ function renderExpenses() {
   const _totIncE = getTotalIncome();
   const _totExpE = getTotalExpense();
   const _expPctE = _totIncE > 0 ? ((_totExpE / _totIncE) * 100).toFixed(1) : '—';
-  const top = getTopCats(state.entries.expense, 1)[0];
+  const top = getTopCats(monthEntries('expense'), 1)[0];
   if (top) {
     const _topCatPct = _totIncE > 0 ? (top.total / _totIncE * 100).toFixed(1) : '—';
     const _expBudget = (state.budgetLines.expense||[]).reduce((s,l)=>s+(parseFloat(l.limit)||0),0);
     const _budgetUse = _expBudget > 0 ? Math.round((_totExpE/_expBudget)*100) : null;
-    const _dayOfMonth = new Date().getDate();
-    const _daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate();
+    const _today = new Date();
+    const _isCurrentMonth = state.activeMonth === _today.getMonth() && state.activeYear === _today.getFullYear();
+    const _isFutureMonth  = (state.activeYear > _today.getFullYear()) ||
+      (state.activeYear === _today.getFullYear() && state.activeMonth > _today.getMonth());
+    const _daysInMonth = new Date(state.activeYear, state.activeMonth+1, 0).getDate();
+    const _dayOfMonth = _isCurrentMonth ? _today.getDate() : (_isFutureMonth ? 0 : _daysInMonth);
     const _monthPct = Math.round((_dayOfMonth/_daysInMonth)*100);
     const _paceMsg = _budgetUse === null ? '' :
       _budgetUse > _monthPct + 15 ? `You are burning through your budget faster than the month is passing (<strong>${_budgetUse}%</strong> used at ${_monthPct}% of the month) — slow down.` :
@@ -4006,7 +4034,7 @@ function renderExpenses() {
       `Your spending pace matches the month (<strong>${_budgetUse}%</strong> of budget at ${_monthPct}% through).`;
     document.getElementById('expenseIntelText').innerHTML =
       `<strong>${top.name}</strong> is your biggest cost at ${fmt(top.total)} (<strong>${_topCatPct}%</strong> of income). Total spending is <strong>${_expPctE}%</strong> of income. ${_paceMsg}`;
-    const top3 = getTopEntries(state.entries.expense, top.name, 3);
+    const top3 = getTopEntries(_expMonth, top.name, 3);
     document.getElementById('expenseIntelList').innerHTML =
       top3.map(t => `<div class="intel-item"><span class="intel-item-name">${t.desc}</span><span class="intel-item-amt">${fmt(t.amount)}</span></div>`).join('');
   } else {
@@ -4014,7 +4042,7 @@ function renderExpenses() {
     document.getElementById('expenseIntelList').innerHTML = '';
   }
 
-  const cats = getTopCats(state.entries.expense, 8);
+  const cats = getTopCats(monthEntries('expense'), 8);
   const maxVal = cats[0]?.total || 1;
   document.getElementById('expenseCatBreakdown').innerHTML = cats.map(c => ` <div>
       <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;">
@@ -4063,9 +4091,9 @@ function renderSavings() {
 function _renderSavingsEntries() {
   const el = document.getElementById('savingsEntriesList'); if (!el) return;
   const _savCats = new Set((state.budgetLines.savings||[]).map(l=>l.name).concat(['Savings']));
-  const entries = state.entries.expense.filter(e=>_savCats.has(e.cat)).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const entries = monthEntries('expense').filter(e=>_savCats.has(e.cat)).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   if (!entries.length) {
-    el.innerHTML = `<div style="text-align:center;padding:20px;font-size:12px;color:var(--dusty);">No savings logged yet. Click "+ Log Savings" to add one, or set up Recurring Savings.</div>`;
+    el.innerHTML = `<div style="text-align:center;padding:20px;font-size:12px;color:var(--dusty);">No savings logged for ${MONTHS[state.activeMonth]} ${state.activeYear} yet. Click "+ Log Savings" to add one, or set up Recurring Savings.</div>`;
     return;
   }
   el.innerHTML = entries.map(e => `
@@ -4086,7 +4114,7 @@ let _savingsPieChart = null;
 function _renderSavingsPie() {
   const canvas = document.getElementById('savingsPieChart'); if (!canvas) return;
   const _savCats = new Set((state.budgetLines.savings||[]).map(l=>l.name).concat(['Savings']));
-  const entries = state.entries.expense.filter(e=>_savCats.has(e.cat));
+  const entries = monthEntries('expense').filter(e=>_savCats.has(e.cat));
   const byCat = {};
   entries.forEach(e => { byCat[e.cat] = (byCat[e.cat]||0) + Number(e.amount); });
   const labels = Object.keys(byCat);
@@ -4252,6 +4280,7 @@ function switchTab(tabId) {
 
   const titleText = TAB_TITLES[tabId] || tabId;
   document.getElementById('pageTitle').innerHTML = `<span>${titleText}</span>`;
+  renderMonthSwitcherLabels();
 
   // Lazy-render
   if (tabId === 'dashboard')  renderDashboard();
@@ -4465,12 +4494,39 @@ function updateHeaderProfile() {
   document.getElementById('sidebarName').textContent = name.split(' ')[0] || 'MyProfile';
 }
 
-function setActiveMonth(idx) {
+function setActiveMonth(idx, year) {
   state.activeMonth = idx;
+  if (typeof year === 'number') state.activeYear = year;
   document.querySelectorAll('.month-tab').forEach((t, i) => {
     t.classList.toggle('active', i === idx);
   });
+  renderMonthSwitcherLabels();
+  _rerenderFinanceTab();
   saveCompanySettingsDebounced();
+}
+
+// Prev/next arrows on the compact month switcher shown atop Dashboard/Income/Expenses/Savings
+function shiftActiveMonth(delta) {
+  let m = state.activeMonth + delta;
+  let y = state.activeYear;
+  if (m < 0)  { m = 11; y -= 1; }
+  if (m > 11) { m = 0;  y += 1; }
+  setActiveMonth(m, y);
+}
+
+function renderMonthSwitcherLabels() {
+  document.querySelectorAll('.month-switcher-label').forEach(el => {
+    el.textContent = `${MONTHS[state.activeMonth]} ${state.activeYear}`;
+  });
+}
+
+function _rerenderFinanceTab() {
+  const active = document.querySelector('.tab-content.active');
+  const id = active ? active.id.replace('tab-', '') : null;
+  if (id === 'dashboard') renderDashboard();
+  else if (id === 'income') renderIncome();
+  else if (id === 'expenses') renderExpenses();
+  else if (id === 'savings') renderSavings();
 }
 
 function addBudgetLine(type) {
@@ -8857,9 +8913,11 @@ async function loadAllData() {
           state.budgetLines = { income: cs.budget_lines.income||[], expense: cs.budget_lines.expense||[], savings: cs.budget_lines.savings||[] };
         }
         state.activeMonth = cs.active_month ?? (new Date().getMonth());
+        state.activeYear  = cs.active_year  ?? (new Date().getFullYear());
         if (cs.currency) state.currency = cs.currency;
       } else {
         state.activeMonth = new Date().getMonth();
+        state.activeYear  = new Date().getFullYear();
       }
       state.team          = teamRes.data ? teamRes.data.map(_dbProfile) : [];
       state.workLogs       = wlRes.data ? wlRes.data.map(_dbWorkLog) : [];
@@ -9212,6 +9270,7 @@ async function saveCompanySettingsNow() {
       id: 1,
       budget_lines: { income: state.budgetLines.income, expense: state.budgetLines.expense, savings: state.budgetLines.savings },
       active_month: state.activeMonth,
+      active_year: state.activeYear,
       currency: state.currency,
       updated_by: currentUser.id,
       updated_at: new Date().toISOString(),
@@ -9279,8 +9338,14 @@ function applyPermissionGating() {
   const financeSection = document.getElementById('navSectionFinance');
   if (financeSection) financeSection.style.display = can('finance_view') ? '' : 'none';
 
+  const hasSalesAccess = can('sales_log') || can('inventory_view') || can('inventory_edit');
   const salesSection = document.getElementById('navSectionSales');
-  if (salesSection) salesSection.style.display = (can('sales_log') || can('inventory_view') || can('inventory_edit')) ? '' : 'none';
+  if (salesSection) salesSection.style.display = hasSalesAccess ? '' : 'none';
+
+  const ovFinance = document.getElementById('navOverviewFinance');
+  if (ovFinance) ovFinance.style.display = can('finance_view') ? '' : 'none';
+  const ovSales = document.getElementById('navOverviewSales');
+  if (ovSales) ovSales.style.display = hasSalesAccess ? '' : 'none';
 
   document.body.classList.toggle('no-finance-edit', !can('finance_edit'));
   document.body.classList.toggle('no-inventory-edit', !can('inventory_edit'));
